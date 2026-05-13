@@ -38,3 +38,12 @@ body {
 .animate-cubefloat {
   animation: cubefloat 5s ease-in-out infinite;
 }
+
+/* ── Utility: hide scrollbar (bottom bar horizontal overflow) ──────────── */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

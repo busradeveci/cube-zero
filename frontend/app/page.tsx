@@ -6,122 +6,222 @@ const NeuralCubeScene = dynamic(
   { ssr: false },
 );
 
+/* ── Badge data ─────────────────────────────────────────────────────────── */
+const BADGES = [
+  { label: "LPU Powered AI" },
+  { label: "Groq Inference" },
+  { label: "Llama 3.3 · 70B" },
+];
+
+/* ── Bottom unified bar data ────────────────────────────────────────────── */
+const STEPS = [
+  {
+    num: "01",
+    action: "Linki Yapıştır",
+    feature: "Ürün URL'sini dashboard'a bırak",
+  },
+  {
+    num: "02",
+    action: "Ajan Analiz Etsin",
+    feature: "Piyasa taranır, fiyat doğrulanır",
+  },
+  {
+    num: "03",
+    action: "Kararı Al",
+    feature: "AL · STRATEJİK BEKLEME · ALMA",
+  },
+];
+
 export default function HomePage() {
   return (
     /*
-      No bg-cube-bg here — the body carries #261f38.
-      Removing it from <main> lets the transparent Three.js canvas expose
-      the page background directly, erasing the "container box" effect.
+      Single-screen layout: h-screen overflow-hidden so nothing scrolls.
+      flex-col splits hero (flex-1) from the bottom process bar (shrink-0).
     */
-    <main className="relative min-h-screen overflow-hidden">
+    <main className="relative flex h-screen flex-col overflow-hidden">
 
-      {/* ── Ambient glow layer (right-side radial) ──────────────────────── */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: [
-            "radial-gradient(ellipse 55% 70% at 78% 50%, rgba(188,87,39,0.15) 0%, rgba(188,87,39,0.04) 52%, transparent 72%)",
-            "radial-gradient(ellipse 25% 40% at 78% 50%, rgba(188,87,39,0.12) 0%, transparent 55%)",
-          ].join(", "),
-        }}
-      />
+      {/* ══════════════════════════════════════════════════════════
+          HERO — fills all remaining vertical space
+      ══════════════════════════════════════════════════════════ */}
+      <section className="relative flex min-h-0 flex-1 overflow-hidden">
 
-      {/* ── Three.js canvas — absolutely fills the right 50 % ───────────────
-           • alpha:true on the Canvas clears to rgba(0,0,0,0)
-           • The page body background (#261f38) shows through all empty areas
-           • z-index: 1 so glow effects sit above the CSS radial glow but
-             below the text content (z-10)
-      ─────────────────────────────────────────────────────────────────── */}
-      <div
-        className="absolute inset-y-0 right-0 hidden lg:block"
-        style={{
-          width: "50vw",
-          zIndex: 1,
-          pointerEvents: "none",
-          background: "transparent",
-        }}
-      >
-        <NeuralCubeScene />
-      </div>
+        {/* ── Multi-layer ambient glow ───────────────────────────────── */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: [
+              /* right-center main halo */
+              "radial-gradient(ellipse 70% 90% at 80% 50%, rgba(188,87,39,0.24) 0%, rgba(188,87,39,0.06) 50%, transparent 70%)",
+              /* right bright core */
+              "radial-gradient(ellipse 35% 60% at 78% 52%, rgba(188,87,39,0.18) 0%, transparent 55%)",
+              /* bottom-left subtle warmth */
+              "radial-gradient(ellipse 50% 40% at 8% 90%, rgba(188,87,39,0.08) 0%, transparent 60%)",
+            ].join(", "),
+          }}
+        />
 
-      {/* ── Page content — above the canvas ─────────────────────────────── */}
-      <div className="relative z-10 mx-auto grid min-h-screen max-w-[1440px] grid-cols-1 lg:grid-cols-2">
-
-        {/* LEFT: floating content — no bounding box, text sits on the gradient */}
-        <div className="flex flex-col justify-center px-8 py-24 lg:px-16 lg:py-0 xl:px-24">
-
-          <span className="mb-5 inline-block text-[10px] font-medium uppercase tracking-[0.42em] text-cube-accent">
-            CubeZero · Finansal Kalkan
-          </span>
-
-          <h1 className="text-3xl font-bold leading-[1.12] tracking-tight text-cube-text md:text-4xl xl:text-[2.75rem]">
-            CubeZero:{" "}
-            <span
-              className="text-cube-accent"
-              style={{ textShadow: "0 0 48px rgba(188,87,39,0.50)" }}
-            >
-              Otonom
-            </span>{" "}
-            Finansal
-            <br />
-            Kalkanınız
-          </h1>
-
-          <p className="mt-5 text-[15px] leading-relaxed text-cube-text/55">
-            Harcamalarınızı AI Agent ile milisaniyeler içinde analiz edin,
-            otonom kararlarla bütçenizi koruyun.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            {/* Primary CTA — glassmorphism button */}
-            <Link
-              href="/auth"
-              className="inline-flex items-center border border-cube-accent/70 bg-white/[0.06] px-7 py-3 text-sm font-medium text-cube-text backdrop-blur-sm transition-all duration-200 hover:bg-cube-accent hover:border-cube-accent hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cube-accent"
-            >
-              Kalkanı Etkinleştir
-            </Link>
-            {/* Secondary CTA — link to signup flow */}
-            <Link
-              href="/auth?mode=signup"
-              className="inline-flex items-center border border-white/[0.12] bg-white/[0.04] px-5 py-3 text-sm font-medium text-cube-text/60 backdrop-blur-sm transition-all duration-200 hover:border-white/25 hover:text-cube-text hover:bg-white/[0.07]"
-            >
-              Kayıt Ol →
-            </Link>
-          </div>
-
-          {/* Stats bar */}
-          <div className="mt-8 flex items-center gap-6 border-t border-cube-accent/15 pt-6 md:gap-10">
-            <div>
-              <p className="text-lg font-bold text-cube-accent">0</p>
-              <p className="mt-0.5 text-[9px] uppercase tracking-[0.22em] text-cube-text/40">
-                Kart verisi
-              </p>
-            </div>
-            <div className="h-6 w-px bg-cube-accent/20" />
-            <div>
-              <p className="text-lg font-bold text-cube-text">Gemini</p>
-              <p className="mt-0.5 text-[9px] uppercase tracking-[0.22em] text-cube-text/40">
-                AI analiz
-              </p>
-            </div>
-            <div className="h-6 w-px bg-cube-accent/20" />
-            <div>
-              <p className="text-lg font-bold text-cube-text">AL/ALMA</p>
-              <p className="mt-0.5 text-[9px] uppercase tracking-[0.22em] text-cube-text/40">
-                Anlık karar
-              </p>
-            </div>
-          </div>
+        {/* ── 3D Cube — right half, desktop only ────────────────────── */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-y-0 right-0 hidden lg:block"
+          style={{ width: "50vw", zIndex: 1, pointerEvents: "none" }}
+        >
+          <NeuralCubeScene />
         </div>
 
-        {/* RIGHT: invisible spacer that reserves the grid column on desktop */}
-        <div className="hidden lg:block" aria-hidden="true" />
-      </div>
+        {/* ── Mobile background cube (subtle, faded) ────────────────── */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 opacity-20 lg:hidden"
+          style={{ zIndex: 0, pointerEvents: "none" }}
+        >
+          <NeuralCubeScene />
+        </div>
 
-      {/* ── Mobile fallback: canvas below the text ───────────────────────── */}
-      <div className="relative h-[420px] lg:hidden">
-        <NeuralCubeScene />
+        {/* ── Main content grid ─────────────────────────────────────── */}
+        <div className="relative z-10 mx-auto grid h-full w-full max-w-[1440px] grid-cols-1 lg:grid-cols-2">
+
+          {/* LEFT: hero copy — vertically centered */}
+          <div className="flex flex-col justify-center px-8 py-10 lg:px-16 xl:px-24">
+
+            {/* ── Tech badge row ─────────────────────────────────────── */}
+            <div className="mb-7 flex flex-wrap items-center gap-2">
+              {BADGES.map((b) => (
+                <span
+                  key={b.label}
+                  className="rounded-full border border-white/[0.14] bg-white/[0.06] px-3.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.28em] text-cube-text/65 backdrop-blur-sm"
+                >
+                  {b.label}
+                </span>
+              ))}
+            </div>
+
+            {/* ── Main headline ──────────────────────────────────────── */}
+            <h1 className="text-[2rem] font-bold leading-[1.08] tracking-tight text-cube-text sm:text-[2.4rem] xl:text-[2.85rem]">
+              CubeZero:{" "}
+              <br className="hidden sm:block" />
+              Harcamalarınızı{" "}
+              <span
+                className="text-cube-accent"
+                style={{ textShadow: "0 0 72px rgba(188,87,39,0.75)" }}
+              >
+                Akıllı
+              </span>
+              <br />
+              Yatırımlara Dönüştürün
+            </h1>
+
+            {/* ── Sub-copy ───────────────────────────────────────────── */}
+            <p className="mt-5 max-w-[360px] text-[13.5px] leading-relaxed text-cube-text/50">
+              Ürün URL&apos;sini yapıştır — CubeZero piyasayı tarasın,
+              bütçeni korusun ve saniyeler içinde otonom kararını sunsun.
+            </p>
+
+            {/* ── CTA buttons ────────────────────────────────────────── */}
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+
+              {/* PRIMARY: Kayıt Ol — solid accent + neon glow */}
+              <Link
+                href="/auth?mode=signup"
+                className="inline-flex items-center gap-2 bg-cube-accent px-7 py-[11px] text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.97]"
+                style={{
+                  boxShadow:
+                    "0 0 0 1px rgba(188,87,39,0.5), 0 0 20px rgba(188,87,39,0.45), 0 0 48px rgba(188,87,39,0.20)",
+                }}
+              >
+                Kayıt Ol
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </Link>
+
+              {/* SECONDARY: Giriş Yap — glass outlined */}
+              <Link
+                href="/auth"
+                className="inline-flex items-center border border-white/[0.18] bg-white/[0.05] px-7 py-[11px] text-sm font-medium text-cube-text/70 backdrop-blur-sm transition-all duration-200 hover:border-white/30 hover:bg-white/[0.09] hover:text-cube-text"
+              >
+                Giriş Yap
+              </Link>
+            </div>
+          </div>
+
+          {/* RIGHT: cube fills this via absolute */}
+          <div className="hidden lg:block" aria-hidden="true" />
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          BOTTOM UNIFIED BAR — process steps + feature descriptors
+      ══════════════════════════════════════════════════════════ */}
+      <div className="relative shrink-0">
+
+        {/* top edge line */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-px"
+          style={{
+            background:
+              "linear-gradient(to right, transparent 0%, rgba(188,87,39,0.30) 30%, rgba(188,87,39,0.30) 70%, transparent 100%)",
+          }}
+        />
+
+        {/* subtle row glow */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 120% at 50% 100%, rgba(188,87,39,0.07) 0%, transparent 70%)",
+          }}
+        />
+
+        <div className="relative z-10 mx-auto max-w-[1440px] px-8 py-5 lg:px-16 xl:px-24">
+          <div className="flex items-center gap-0 overflow-x-auto scrollbar-none md:gap-0">
+            {STEPS.map((step, i) => (
+              <div key={step.num} className="flex items-center">
+                {/* divider — not before first */}
+                {i > 0 && (
+                  <div className="mx-6 h-8 w-px shrink-0 bg-white/[0.08] md:mx-8" />
+                )}
+
+                {/* step block */}
+                <div className="shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="font-mono text-[10px] font-bold text-cube-accent"
+                      style={{ textShadow: "0 0 12px rgba(188,87,39,0.5)" }}
+                    >
+                      {step.num}
+                    </span>
+                    <span className="text-[12px] font-medium text-cube-text/75">
+                      {step.action}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-[9px] uppercase tracking-[0.20em] text-cube-text/30">
+                    {step.feature}
+                  </p>
+                </div>
+              </div>
+            ))}
+
+            {/* extra right divider + tagline */}
+            <div className="ml-6 hidden h-8 w-px shrink-0 bg-white/[0.08] md:ml-8 md:block" />
+            <p className="ml-6 hidden shrink-0 text-[9px] uppercase tracking-[0.28em] text-cube-text/20 md:ml-8 md:block">
+              CubeZero · Otonom Finansal Kalkan
+            </p>
+          </div>
+        </div>
       </div>
     </main>
   );
