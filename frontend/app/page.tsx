@@ -94,15 +94,15 @@ export default function HomePage() {
 
             {/* Main headline: "Cube" = orange, "Zero" = white with glow */}
             <h1 className="text-[2rem] font-bold leading-[1.08] tracking-tight sm:text-[2.4rem] xl:text-[2.85rem]">
-              <span style={{ color: "#f68c06" }}>Cube</span>
               <span
                 style={{
-                  color: "#ffffff",
-                  textShadow: "0 0 28px rgba(255,255,255,0.35)",
+                  color:      "#f68c06",
+                  textShadow: "0 0 20px rgba(246,140,6,0.8), 0 0 40px rgba(246,140,6,0.4)",
                 }}
               >
-                Zero
+                Cube
               </span>
+              <span style={{ color: "#ffffff" }}>Zero</span>
               :{" "}
               <br className="hidden sm:block" />
               Harcamalarınızı{" "}
@@ -127,30 +127,42 @@ export default function HomePage() {
             {/* CTA buttons */}
             <div className="mt-8 flex flex-wrap items-center gap-4">
 
-              {/* PRIMARY: red Kayıt Ol with glow */}
+              {/* PRIMARY: deep-red Kayıt Ol with strong glow */}
               <Link
                 href="/auth?mode=signup"
-                className="inline-flex items-center gap-2 rounded-lg px-7 py-[11px] text-sm font-semibold text-white transition-[background,box-shadow,transform] duration-200 active:scale-[0.97]"
+                className="inline-flex items-center gap-2 rounded-lg px-7 py-[11px] text-sm text-white transition-[background,box-shadow,transform] duration-200 active:scale-[0.97]"
                 style={{
-                  background: "#dc2626",
-                  boxShadow:  "0 0 20px rgba(220,38,38,0.40)",
+                  background: "#cc0000",
+                  fontWeight: 700,
+                  boxShadow:
+                    "0 0 24px rgba(204,0,0,0.7), 0 0 48px rgba(204,0,0,0.4)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background  = "#b91c1c";
-                  e.currentTarget.style.boxShadow   = "0 0 28px rgba(220,38,38,0.60)";
+                  e.currentTarget.style.background = "#ff0000";
+                  e.currentTarget.style.boxShadow  =
+                    "0 0 32px rgba(255,0,0,0.9), 0 0 64px rgba(255,0,0,0.5)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background  = "#dc2626";
-                  e.currentTarget.style.boxShadow   = "0 0 20px rgba(220,38,38,0.40)";
+                  e.currentTarget.style.background = "#cc0000";
+                  e.currentTarget.style.boxShadow  =
+                    "0 0 24px rgba(204,0,0,0.7), 0 0 48px rgba(204,0,0,0.4)";
                 }}
               >
                 Kayıt Ol
               </Link>
 
-              {/* SECONDARY: transparent text link */}
+              {/* SECONDARY: glass reflection button */}
               <Link
                 href="/auth"
-                className="inline-flex items-center gap-1 px-2 py-[11px] text-sm font-medium text-cube-text/70 transition-colors duration-300 hover:text-white"
+                className="inline-flex items-center gap-1 rounded-lg px-5 py-[11px] text-sm font-medium transition-[background,box-shadow] duration-300"
+                style={{
+                  background:          "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+                  backdropFilter:      "blur(8px)",
+                  WebkitBackdropFilter:"blur(8px)",
+                  border:              "1px solid rgba(255,255,255,0.15)",
+                  boxShadow:           "inset 0 1px 0 rgba(255,255,255,0.15)",
+                  color:               "#f7f7f7",
+                }}
               >
                 Giriş Yap →
               </Link>

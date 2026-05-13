@@ -6,14 +6,13 @@
  * Transparency strategy
  * ─────────────────────
  * • gl={{ alpha: true }} + setClearColor(0,0,0,0) → WebGL writes RGBA=0 to
- *   empty pixels, so the page's #261f38 body colour shows through everywhere
+ *   empty pixels, so the page's body colour shows through everywhere
  *   no geometry is drawn — zero "box" effect.
  *
  * • EffectComposer / postprocessing Bloom is intentionally ABSENT.
  *   Screen-space postprocessing pipelines render to an internal opaque
  *   framebuffer that destroys the alpha channel.  Glow is achieved instead
- *   via high emissiveIntensity + ACESFilmic tonemapping + a double-torus
- *   "halo ring" technique (inner sharp ring + outer soft transparent halo).
+ *   via high emissiveIntensity + ACESFilmic tonemapping + ring system.
  *
  * • MeshReflectorMaterial floor is intentionally ABSENT.
  *   It renders as a large opaque rectangle, defeating transparency.
@@ -28,13 +27,11 @@ import * as THREE from "three";
 const HALF       = 0.92;
 const NODE_COUNT = 260;
 const KNN        = 6;
-const NODE_R     = 0.028;          // slightly larger nodes for better visibility
-const RING_R     = 1.52;
-const RING_TUBE  = 0.012;          // medium thickness neon ring
-const RING_TILT  = Math.PI * 0.13; // ~23°
-const ACCENT     = new THREE.Color("#FF6B00"); // vivid orange
+const NODE_R     = 0.028;
+const RING_R     = 1.52;   // kept for point-light position in Scene
+const ACCENT     = new THREE.Color("#FF6B00");
 const WHITE      = new THREE.Color("#ffffff");
-const EDGE_OPACITY = 0.38;         // brighter edges
+const EDGE_OPACITY = 0.38;
 
 // ─── Geometry precomputation (module-level — runs once) ───────────────────────
 
@@ -107,7 +104,7 @@ const EDGE_BUF  = buildEdgeBuffer(NODES);
 const SPARK_BUF = buildSparkBuffer(160);
 const PHASES    = Float32Array.from({ length: NODE_COUNT }, () => Math.random() * Math.PI * 2);
 const SPEEDS    = Float32Array.from({ length: NODE_COUNT }, () => 0.8 + Math.random() * 1.2);
-const AR = 1.0, AG = 0.420, AB = 0.0; // #FF6B00 linearised
+const AR = 1.0, AG = 0.420, AB = 0.0;
 const _col = new THREE.Color();
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -118,7 +115,7 @@ function NodeMesh() {
     const mat = new THREE.MeshStandardMaterial({
       color: ACCENT,
       emissive: ACCENT,
-      emissiveIntensity: 5.0,   // high HDR value for tonemapped glow
+      emissiveIntensity: 5.0,
       roughness: 0.10,
       metalness: 0.0,
     });
@@ -158,7 +155,6 @@ function EdgeLines() {
     return { seg, mat };
   }, []);
 
-  // "Breathing" — opacity gently pulses between 0.15 and 0.42
   useFrame(({ clock }) => {
     mat.opacity = 0.22 + 0.32 * Math.abs(Math.sin(clock.elapsedTime * 0.55));
   });
@@ -177,7 +173,7 @@ function Sparks() {
       transparent: true,
       opacity: 0.65,
       depthWrite: false,
-      blending: THREE.AdditiveBlending, // additive — particles glow over each other
+      blending: THREE.AdditiveBlending,
     });
     const p = new THREE.Points(geo, mat);
     p.frustumCulled = false;
@@ -186,47 +182,126 @@ function Sparks() {
   return <primitive object={points} />;
 }
 
+// ─── Ring palette (module-level so it's stable across renders) ────────────────
+const RING_PALETTE = [
+  new THREE.Color("#f68c06"), // amber
+  new THREE.Color("#ffd700"), // gold
+  new THREE.Color("#4a9eff"), // teal blue
+];
+const SPARKLE_COUNT = 120;
+
 /**
- * Ring — double-torus "fake bloom" technique.
- * Y-rotation is now handled by the parent cubeRef group so Ring and Cube
- * orbit together. Only emissive intensity is animated here.
+ * Ring — Saturn-style warm amber ring system with sparkle particles.
+ *
+ * mainRing   radius 2.0,  tube 0.022 — solid amber ring
+ * innerRing  radius 1.75, tube 0.010 — golden brown inner trace
+ * outerRing  radius 2.25, tube 0.055 — soft additive glow halo
+ * sparkleMesh — 120 InstancedMesh spheres orbiting the ring path
+ *               with per-frame flicker (8 random particles per frame)
  */
 function Ring() {
-  const { innerTorus, haloTorus, innerMat } = useMemo(() => {
-    const sharpGeo = new THREE.TorusGeometry(RING_R, RING_TUBE, 20, 280);
-    const innerMat = new THREE.MeshStandardMaterial({
-      color: WHITE,
-      emissive: WHITE,
-      emissiveIntensity: 16,
-      roughness: 0.0,
-      metalness: 0.0,
-    });
-    const inner = new THREE.Mesh(sharpGeo, innerMat);
-    inner.rotation.x = RING_TILT;
+  const sparkleGroupRef = useRef<THREE.Group>(null!);
 
-    const haloGeo = new THREE.TorusGeometry(RING_R, 0.052, 14, 220);
-    const haloMat = new THREE.MeshBasicMaterial({
-      color: WHITE,
-      transparent: true,
-      opacity: 0.16,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
-    const halo = new THREE.Mesh(haloGeo, haloMat);
-    halo.rotation.x = RING_TILT;
+  const { mainRing, innerRing, outerRing, sparkleMesh, sparkleBaseColors } =
+    useMemo(() => {
+      // ── Main ring ─────────────────────────────────────────────────────────
+      const mainRing = new THREE.Mesh(
+        new THREE.TorusGeometry(2.0, 0.022, 128, 200),
+        new THREE.MeshBasicMaterial({
+          color:       new THREE.Color("#f68c06"),
+          transparent: true,
+          opacity:     0.85,
+        }),
+      );
+      mainRing.rotation.x = Math.PI / 2;
 
-    return { innerTorus: inner, haloTorus: halo, innerMat };
-  }, []);
+      // ── Inner glow ring ───────────────────────────────────────────────────
+      const innerRing = new THREE.Mesh(
+        new THREE.TorusGeometry(1.75, 0.010, 128, 180),
+        new THREE.MeshBasicMaterial({
+          color:       new THREE.Color("#bc8a3f"),
+          transparent: true,
+          opacity:     0.60,
+        }),
+      );
+      innerRing.rotation.x = Math.PI / 2;
 
-  // Pulse emissive only — Y rotation comes from parent cubeRef
-  useFrame(({ clock }) => {
-    innerMat.emissiveIntensity = 12 + 8 * Math.abs(Math.sin(clock.elapsedTime * 0.55));
+      // ── Outer soft halo ───────────────────────────────────────────────────
+      const outerRing = new THREE.Mesh(
+        new THREE.TorusGeometry(2.25, 0.055, 128, 180),
+        new THREE.MeshBasicMaterial({
+          color:       new THREE.Color("#f68c06"),
+          transparent: true,
+          opacity:     0.08,
+          depthWrite:  false,
+          blending:    THREE.AdditiveBlending,
+        }),
+      );
+      outerRing.rotation.x = Math.PI / 2;
+
+      // ── Sparkle particles — InstancedMesh ─────────────────────────────────
+      const sparkleMat = new THREE.MeshBasicMaterial({ color: WHITE });
+      const sparkleGeo = new THREE.SphereGeometry(0.008, 6, 6);
+      const sm         = new THREE.InstancedMesh(sparkleGeo, sparkleMat, SPARKLE_COUNT);
+      sm.frustumCulled = false;
+
+      // Store base colors so useFrame can restore them after flicker
+      const sparkleBaseColors: THREE.Color[] = [];
+      const m4 = new THREE.Matrix4();
+
+      for (let i = 0; i < SPARKLE_COUNT; i++) {
+        const angle = (i / SPARKLE_COUNT) * Math.PI * 2;
+        const r     = 1.85 + Math.random() * 0.35;
+        const x     = Math.cos(angle) * r;
+        const y     = (Math.random() - 0.5) * 0.15;
+        const z     = Math.sin(angle) * r;
+        m4.setPosition(x, y, z);
+        sm.setMatrixAt(i, m4);
+
+        const baseOpacity = 0.3 + Math.random() * 0.6;
+        const base        = new THREE.Color(baseOpacity, baseOpacity, baseOpacity);
+        sparkleBaseColors.push(base);
+        sm.setColorAt(i, base);
+      }
+      sm.instanceMatrix.needsUpdate = true;
+      if (sm.instanceColor) sm.instanceColor.needsUpdate = true;
+
+      return { mainRing, innerRing, outerRing, sparkleMesh: sm, sparkleBaseColors };
+    }, []);
+
+  // Reusable color object to avoid per-frame allocations
+  const _flickerCol = useMemo(() => new THREE.Color(), []);
+
+  useFrame(() => {
+    // ── Ring Y-axis rotations ─────────────────────────────────────────────
+    mainRing.rotation.y  += 0.003;
+    innerRing.rotation.y += 0.004;
+    outerRing.rotation.y += 0.002;
+
+    // ── Sparkle group orbits with mainRing ────────────────────────────────
+    sparkleGroupRef.current.rotation.y += 0.003;
+
+    // ── Flicker: toggle 8 random particles each frame ─────────────────────
+    for (let k = 0; k < 8; k++) {
+      const idx           = Math.floor(Math.random() * SPARKLE_COUNT);
+      const flickerScale  = Math.random() < 0.5 ? 0.2 : 1.0;
+      _flickerCol.setRGB(flickerScale, flickerScale, flickerScale);
+      sparkleMesh.setColorAt(idx, _flickerCol);
+    }
+    sparkleMesh.instanceColor!.needsUpdate = true;
   });
+
+  // Keep sparkleBaseColors referenced so it isn't GC'd
+  void sparkleBaseColors;
 
   return (
     <>
-      <primitive object={innerTorus} />
-      <primitive object={haloTorus} />
+      <primitive object={mainRing}  />
+      <primitive object={innerRing} />
+      <primitive object={outerRing} />
+      <group ref={sparkleGroupRef}>
+        <primitive object={sparkleMesh} />
+      </group>
     </>
   );
 }
@@ -238,7 +313,6 @@ function Scene() {
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
     floatRef.current.position.y = Math.sin(t * 0.44) * 0.10;
-    // Cube AND Ring rotate together at the same Y speed
     cubeRef.current.rotation.y  = t * 0.22;
   });
 
@@ -247,13 +321,15 @@ function Scene() {
       <ambientLight intensity={0.10} color="#1a0a00" />
 
       <group ref={floatRef} position={[0.45, 0, 0]}>
-        {/* Ring is INSIDE cubeRef — they share the same Y rotation */}
+        {/* Cube rotates on Y */}
         <group ref={cubeRef}>
           <NodeMesh />
           <EdgeLines />
           <Sparks />
-          <Ring />
         </group>
+
+        {/* Ring system — independent of cube rotation */}
+        <Ring />
 
         {/* Vivid orange point lights */}
         <pointLight color="#FF6B00" intensity={14} distance={4.5} decay={2} />
@@ -283,18 +359,17 @@ export default function NeuralCubeScene() {
       camera={{ position: [1.8, 1.4, 5.4], fov: 44 }}
       gl={{
         antialias: true,
-        alpha: true,                  // RGBA framebuffer
+        alpha: true,
         powerPreference: "high-performance",
       }}
       dpr={[1, 2]}
       style={{ width: "100%", height: "100%", background: "transparent" }}
       onCreated={({ gl }) => {
-        gl.setClearColor(0x000000, 0); // alpha = 0 → fully transparent clear
+        gl.setClearColor(0x000000, 0);
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.1;
       }}
     >
-      {/* No <color> tag — background is intentionally transparent */}
       <Scene />
     </Canvas>
   );
