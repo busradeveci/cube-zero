@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #261f38;
+  --fg: #efefef;
+  --accent: #bc5727;
+  --muted: #9ca3af;
+  --border: #4b5563;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+::selection {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* ── Floating / breathing animation for the hero cube PNG ─────────────────── */
+@keyframes cubefloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.animate-cubefloat {
+  animation: cubefloat 5s ease-in-out infinite;
+}
