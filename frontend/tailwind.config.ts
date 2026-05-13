@@ -10,16 +10,21 @@ const config: Config = {
     extend: {
       colors: {
         cube: {
-          bg: "#261f38",
-          accent: "#bc5727",
-          text: "#efefef",
-          surface: "rgba(255,255,255,0.05)",
-          border: "rgba(255,255,255,0.10)",
-          // legacy tokens kept for auth/dashboard backward compat
-          black: "#000000",
-          white: "#FFFFFF",
-          gray: "#9CA3AF",
-          muted: "#4B5563",
+          bg:           "#15181c",
+          "bg-deep":    "#181818",
+          blue:         "#325da7",
+          orange:       "#f68c06",
+          accent:       "#f68c06",   // alias → orange (replaces legacy #bc5727)
+          text:         "#f7f7f7",
+          white:        "#ffffff",
+          surface:      "rgba(255,255,255,0.06)",
+          "surface-md": "rgba(255,255,255,0.10)",
+          border:       "rgba(255,255,255,0.08)",
+          "border-md":  "rgba(255,255,255,0.15)",
+          // legacy tokens kept for reference
+          black:  "#000000",
+          gray:   "#9CA3AF",
+          muted:  "#4B5563",
         },
       },
       fontFamily: {

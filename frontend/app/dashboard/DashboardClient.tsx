@@ -5,7 +5,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Decision = "shield" | "caution" | "allow" | null;
 
-const LIMIT_KEY = "cubezero_monthly_limit_try";
+const LIMIT_KEY   = "cubezero_monthly_limit_try";
 const HISTORY_KEY = "cubezero_history";
 const SAVINGS_KEY = "cubezero_savings";
 
@@ -16,9 +16,9 @@ const STATUS_MESSAGES = [
 ];
 
 interface HistoryItem {
-  id: string;
-  url: string;
-  decision: Decision;
+  id:        string;
+  url:       string;
+  decision:  Decision;
   timestamp: number;
 }
 
@@ -29,14 +29,9 @@ interface Props {
 function InfoIcon() {
   return (
     <svg
-      width="11"
-      height="11"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      width="11" height="11" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
       className="inline"
     >
       <circle cx="12" cy="12" r="10" />
@@ -46,29 +41,41 @@ function InfoIcon() {
   );
 }
 
+/* ── Glassmorphism card style object (reused) ──────────────────────────── */
+const glassCard: React.CSSProperties = {
+  background:              "rgba(255,255,255,0.06)",
+  backdropFilter:          "blur(16px)",
+  WebkitBackdropFilter:    "blur(16px)",
+  border:                  "1px solid rgba(255,255,255,0.08)",
+  borderRadius:            "16px",
+};
+
+const glassCardHover: React.CSSProperties = {
+  background:   "rgba(255,255,255,0.10)",
+  borderColor:  "rgba(255,255,255,0.15)",
+};
+
 export function DashboardClient({ email }: Props) {
-  const [limit, setLimit] = useState("");
-  const [url, setUrl] = useState("");
-  const [decision, setDecision] = useState<Decision>(null);
-  const [rationale, setRationale] = useState<string | null>(null);
-  const [savingsTip, setSavingsTip] = useState<string | null>(null);
-  const [confidence, setConfidence] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [savings, setSavings] = useState(0);
+  const [limit, setLimit]             = useState("");
+  const [url, setUrl]                 = useState("");
+  const [decision, setDecision]       = useState<Decision>(null);
+  const [rationale, setRationale]     = useState<string | null>(null);
+  const [savingsTip, setSavingsTip]   = useState<string | null>(null);
+  const [confidence, setConfidence]   = useState<number | null>(null);
+  const [loading, setLoading]         = useState(false);
+  const [error, setError]             = useState<string | null>(null);
+  const [history, setHistory]         = useState<HistoryItem[]>([]);
+  const [savings, setSavings]         = useState(0);
   const [statusIndex, setStatusIndex] = useState(0);
 
   const statusIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    const savedLimit = window.localStorage.getItem(LIMIT_KEY);
+    const savedLimit   = window.localStorage.getItem(LIMIT_KEY);
     if (savedLimit) setLimit(savedLimit);
     const savedHistory = window.localStorage.getItem(HISTORY_KEY);
     if (savedHistory) {
-      try {
-        setHistory(JSON.parse(savedHistory));
-      } catch {}
+      try { setHistory(JSON.parse(savedHistory)); } catch {}
     }
     const savedSavings = window.localStorage.getItem(SAVINGS_KEY);
     if (savedSavings) setSavings(Number(savedSavings));
@@ -111,27 +118,20 @@ export function DashboardClient({ email }: Props) {
 
     try {
       const supabase = getSupabaseBrowserClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
 
       const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (session?.access_token) {
-        headers["Authorization"] = `Bearer ${session.access_token}`;
-      }
+      if (session?.access_token) headers["Authorization"] = `Bearer ${session.access_token}`;
 
       const res = await fetch(`${apiBase}/analyze`, {
         method: "POST",
         headers,
-        body: JSON.stringify({
-          url: url.trim(),
-          monthly_limit_try: limit.trim() || null,
-        }),
+        body: JSON.stringify({ url: url.trim(), monthly_limit_try: limit.trim() || null }),
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const d = (data as { detail?: unknown }).detail;
+        const d   = (data as { detail?: unknown }).detail;
         const msg =
           typeof d === "string"
             ? d
@@ -142,10 +142,10 @@ export function DashboardClient({ email }: Props) {
       }
 
       const typed = data as {
-        decision: Decision;
-        rationale: string;
+        decision:    Decision;
+        rationale:   string;
         savings_tip: string;
-        confidence: number;
+        confidence:  number;
       };
       setDecision(typed.decision);
       setRationale(typed.rationale ?? null);
@@ -153,9 +153,9 @@ export function DashboardClient({ email }: Props) {
       setConfidence(typeof typed.confidence === "number" ? typed.confidence : null);
 
       const newItem: HistoryItem = {
-        id: Date.now().toString(),
-        url: url.trim(),
-        decision: typed.decision,
+        id:        Date.now().toString(),
+        url:       url.trim(),
+        decision:  typed.decision,
         timestamp: Date.now(),
       };
       const nextHistory = [newItem, ...history].slice(0, 20);
@@ -175,38 +175,60 @@ export function DashboardClient({ email }: Props) {
   }
 
   const verdictLabel = useMemo(() => {
-    if (decision === "allow") return "AL";
+    if (decision === "allow")   return "AL";
     if (decision === "caution") return "STRATEJİK BEKLEME";
-    if (decision === "shield") return "ALMA";
+    if (decision === "shield")  return "ALMA";
     return null;
   }, [decision]);
 
-  const verdictColor = useMemo(() => {
-    if (decision === "allow") return "text-emerald-400";
-    if (decision === "caution") return "text-cube-accent";
-    if (decision === "shield") return "text-cube-text/40";
-    return "";
+  /* Verdict colors per spec:
+     AL (allow)   → #f7f7f7  white
+     ALMA (shield)→ #f68c06  orange
+     BEKLE(caution)→ rgba(247,247,247,0.45) muted  */
+  const verdictStyle = useMemo((): React.CSSProperties => {
+    if (decision === "allow")   return { color: "#f7f7f7" };
+    if (decision === "caution") return { color: "rgba(247,247,247,0.45)" };
+    if (decision === "shield")  return { color: "#f68c06" };
+    return {};
   }, [decision]);
 
   function historyDecisionLabel(d: Decision): string {
-    if (d === "allow") return "AL";
+    if (d === "allow")   return "AL";
     if (d === "caution") return "BEKLE";
-    if (d === "shield") return "ALMA";
+    if (d === "shield")  return "ALMA";
     return "?";
   }
 
-  function historyDecisionColor(d: Decision): string {
-    if (d === "allow") return "text-emerald-400";
-    if (d === "caution") return "text-cube-accent";
-    if (d === "shield") return "text-cube-text/40";
-    return "text-cube-text/40";
+  function deleteHistoryItem(id: string) {
+    const next = history.filter((item) => item.id !== id);
+    setHistory(next);
+    window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
   }
 
-  const cubeSpeed = loading ? "1s" : "8s";
+  function truncateUrl(raw: string): string {
+    try {
+      const { hostname, pathname } = new URL(raw);
+      const slug = pathname.replace(/^\//, "").slice(0, 22);
+      const short = hostname + (slug ? "/" + slug : "");
+      return short.length > 40 ? short.slice(0, 40) + "…" : short + (pathname.length > 23 ? "…" : "");
+    } catch {
+      return raw.length > 40 ? raw.slice(0, 40) + "…" : raw;
+    }
+  }
+
+  function historyDecisionStyle(d: Decision): React.CSSProperties {
+    if (d === "allow")   return { color: "#f7f7f7" };
+    if (d === "caution") return { color: "rgba(247,247,247,0.45)" };
+    if (d === "shield")  return { color: "#f68c06" };
+    return { color: "rgba(247,247,247,0.40)" };
+  }
+
+  const cubeSpeed  = loading ? "1s" : "8s";
   const cubePaused = !loading && decision !== null;
 
   return (
     <>
+      {/* CSS cube animation — edges now blue (#325da7) */}
       <style>{`
         @keyframes rotateCube {
           from { transform: rotateX(-18deg) rotateY(0deg); }
@@ -224,8 +246,8 @@ export function DashboardClient({ email }: Props) {
           position: absolute;
           width: 120px;
           height: 120px;
-          border: 1.5px solid #bc5727;
-          background: rgba(188,87,39,0.025);
+          border: 1.5px solid #325da7;
+          background: rgba(50, 93, 167, 0.025);
         }
         .cube-face.front  { transform: translateZ(60px); }
         .cube-face.back   { transform: rotateY(180deg) translateZ(60px); }
@@ -235,19 +257,19 @@ export function DashboardClient({ email }: Props) {
         .cube-face.bottom { transform: rotateX(-90deg) translateZ(60px); }
       `}</style>
 
-      <main className="min-h-screen bg-cube-bg text-cube-text">
-        {/* Ambient glow */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-0 z-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 45% at 80% 15%, rgba(188,87,39,0.07) 0%, transparent 65%)",
-          }}
-        />
+      {/* Transparent main — global bg (#15181c + dot grid) shows through */}
+      <main className="min-h-screen text-cube-text">
 
         {/* Header */}
-        <header className="relative z-10 flex items-center justify-between border-b border-white/10 px-8 py-4 backdrop-blur-sm bg-white/[0.02]">
+        <header
+          className="relative z-10 flex items-center justify-between px-8 py-4"
+          style={{
+            background:     "rgba(255,255,255,0.04)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            borderBottom:   "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
           <h1 className="font-mono text-xs uppercase tracking-[0.35em] text-cube-text/50">
             CubeZ · Fintech AI
           </h1>
@@ -264,10 +286,10 @@ export function DashboardClient({ email }: Props) {
         </header>
 
         {/* 3-column cockpit */}
-        <div className="relative z-10 grid h-[calc(100vh-57px)] grid-cols-[25%_50%_25%] divide-x divide-white/10">
+        <div className="relative z-10 grid h-[calc(100vh-57px)] grid-cols-[25%_50%_25%] gap-4 p-4">
 
-          {/* ── Column 1: Z-ARŞİV ── */}
-          <aside className="flex flex-col gap-5 overflow-y-auto p-6">
+          {/* ── Column 1: Z-ARŞİV — glass card ── */}
+          <aside className="flex flex-col gap-5 overflow-y-auto p-6" style={glassCard}>
             <h2 className="font-mono text-[10px] uppercase tracking-[0.35em] text-cube-text/50">
               Z-ARŞİV
             </h2>
@@ -282,17 +304,32 @@ export function DashboardClient({ email }: Props) {
                   {limit ? `${limit} TRY` : "—"}
                 </span>
               </div>
-              <div className="h-px w-full overflow-hidden bg-white/10">
+
+              {/* Progress bar: blue → orange gradient */}
+              <div
+                className="h-1.5 w-full overflow-hidden rounded-full"
+                style={{ background: "rgba(255,255,255,0.08)" }}
+              >
                 <div
-                  className="h-full bg-cube-accent transition-all duration-700"
-                  style={{ width: limit ? "0%" : "0%" }}
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: "0%",
+                    background: "linear-gradient(90deg, #325da7, #f68c06)",
+                  }}
                 />
               </div>
+
               <input
                 value={limit}
                 onChange={(e) => persistLimit(e.target.value)}
                 placeholder="Limit gir (TRY)"
-                className="w-full border border-white/10 bg-white/[0.05] px-3 py-2 text-xs text-cube-text outline-none placeholder:text-cube-text/25 focus:border-cube-accent/50 transition-colors backdrop-blur-md"
+                className="w-full rounded-lg px-3 py-2 text-xs text-cube-text outline-none placeholder:text-cube-text/25 transition-colors"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border:     "1px solid rgba(255,255,255,0.10)",
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(50,93,167,0.60)"; }}
+                onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}
               />
             </div>
 
@@ -308,11 +345,31 @@ export function DashboardClient({ email }: Props) {
                   {history.map((item) => (
                     <li
                       key={item.id}
-                      className="border border-white/[0.08] bg-white/[0.04] px-3 py-2 backdrop-blur-md"
+                      className="relative rounded-xl px-3 py-2 transition-colors"
+                      style={{
+                        background: "rgba(255,255,255,0.04)",
+                        border:     "1px solid rgba(255,255,255,0.08)",
+                      }}
+                      onMouseEnter={(e) => Object.assign(e.currentTarget.style, glassCardHover)}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background  = "rgba(255,255,255,0.04)";
+                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+                      }}
                     >
-                      <div className="flex items-center justify-between">
+                      {/* Delete button */}
+                      <button
+                        type="button"
+                        onClick={() => deleteHistoryItem(item.id)}
+                        aria-label="Sil"
+                        className="absolute right-2 top-2 text-sm leading-none text-white/40 transition-colors hover:text-white/80"
+                      >
+                        ×
+                      </button>
+
+                      <div className="flex items-center justify-between pr-4">
                         <span
-                          className={`font-mono text-[10px] font-semibold ${historyDecisionColor(item.decision)}`}
+                          className="font-mono text-[10px] font-semibold"
+                          style={historyDecisionStyle(item.decision)}
                         >
                           {historyDecisionLabel(item.decision)}
                         </span>
@@ -320,8 +377,9 @@ export function DashboardClient({ email }: Props) {
                           {new Date(item.timestamp).toLocaleDateString("tr-TR")}
                         </span>
                       </div>
-                      <p className="mt-0.5 truncate text-[10px] text-cube-text/30">
-                        {item.url}
+
+                      <p className="mt-0.5 text-[10px] text-cube-text/30 pr-4">
+                        {truncateUrl(item.url)}
                       </p>
                     </li>
                   ))}
@@ -329,28 +387,35 @@ export function DashboardClient({ email }: Props) {
               )}
             </div>
 
-            {/* Savings counter */}
-            <div className="border border-white/[0.08] bg-white/[0.04] p-4 backdrop-blur-md">
+            {/* Savings counter — orange */}
+            <div
+              className="rounded-xl p-4"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border:     "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
               <p className="text-[9px] uppercase tracking-widest text-cube-text/40">
                 Toplam Tasarruf
               </p>
-              <p className="mt-1 font-mono text-3xl font-semibold text-cube-accent">
+              <p className="mt-1 font-mono text-3xl font-semibold" style={{ color: "#f68c06" }}>
                 {savings}
               </p>
               <p className="mt-0.5 text-[9px] text-cube-text/25">iptal / bekle kararı</p>
             </div>
           </aside>
 
-          {/* ── Column 2: Cube + Input ── */}
-          <section className="flex flex-col items-center p-8 pt-12">
-            {/* 3D wireframe cube — upper flex area */}
+          {/* ── Column 2: Cube + Input — transparent ── */}
+          <section className="flex flex-col items-center rounded-2xl p-8 pt-12">
+
+            {/* 3D wireframe cube */}
             <div className="flex flex-1 flex-col items-center justify-center gap-5 min-h-0">
               <div style={{ width: 120, height: 120, perspective: "320px" }}>
                 <div
                   className="cube-inner"
                   style={
                     {
-                      "--cube-speed": cubeSpeed,
+                      "--cube-speed":      cubeSpeed,
                       "--cube-play-state": cubePaused ? "paused" : "running",
                     } as React.CSSProperties
                   }
@@ -364,15 +429,19 @@ export function DashboardClient({ email }: Props) {
                 </div>
               </div>
 
-              {/* Status / verdict text below cube */}
-              <div className="h-6 text-center">
+              {/* Status / verdict below cube */}
+              <div className="mt-6 h-6 text-center">
                 {loading ? (
-                  <p className="font-mono text-xs text-cube-text/50 transition-opacity duration-300">
+                  <p
+                    className="font-mono text-xs transition-opacity duration-300"
+                    style={{ color: "#f68c06" }}
+                  >
                     {STATUS_MESSAGES[statusIndex]}
                   </p>
                 ) : verdictLabel ? (
                   <p
-                    className={`font-mono text-sm font-semibold tracking-[0.2em] ${verdictColor}`}
+                    className="font-mono text-sm font-semibold tracking-[0.2em]"
+                    style={verdictStyle}
                   >
                     {verdictLabel}
                   </p>
@@ -382,7 +451,7 @@ export function DashboardClient({ email }: Props) {
               </div>
             </div>
 
-            {/* URL input + button — anchored to lower area */}
+            {/* URL input + send button */}
             <div className="w-full max-w-sm space-y-3 pb-6">
               <input
                 value={url}
@@ -391,13 +460,22 @@ export function DashboardClient({ email }: Props) {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !loading && url.trim()) runAnalysis();
                 }}
-                className="w-full border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-cube-text outline-none placeholder:text-cube-text/25 focus:border-cube-accent/50 transition-colors backdrop-blur-md"
+                className="w-full rounded-lg px-4 py-3 text-sm text-cube-text outline-none placeholder:text-cube-text/25 transition-colors"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border:     "1px solid rgba(255,255,255,0.10)",
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(50,93,167,0.60)"; }}
+                onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}
               />
               <button
                 type="button"
                 onClick={runAnalysis}
                 disabled={loading || !url.trim()}
-                className="w-full border border-cube-accent bg-white/[0.04] py-3 text-sm font-medium uppercase tracking-widest text-cube-text backdrop-blur-md transition-colors hover:bg-cube-accent disabled:opacity-40"
+                className="w-full rounded-lg py-3 text-sm font-semibold uppercase tracking-widest text-white transition-colors disabled:opacity-40"
+                style={{ background: "#325da7" }}
+                onMouseEnter={(e) => { if (!loading && url.trim()) e.currentTarget.style.background = "#2a4f96"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "#325da7"; }}
               >
                 CubeZ&apos;e Gönder
               </button>
@@ -407,18 +485,25 @@ export function DashboardClient({ email }: Props) {
             </div>
           </section>
 
-          {/* ── Column 3: CUBEZ KARARI ── */}
-          <aside className="flex flex-col gap-5 p-6">
+          {/* ── Column 3: CUBEZ KARARI — glass card ── */}
+          <aside className="flex flex-col gap-5 p-6" style={glassCard}>
             <h2 className="font-mono text-[10px] uppercase tracking-[0.35em] text-cube-text/50">
               CUBEZ KARARI
             </h2>
 
             {/* Verdict card */}
-            <div className="border border-white/[0.08] bg-white/[0.04] p-5 backdrop-blur-md">
+            <div
+              className="rounded-xl p-5"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border:     "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
               <p className="text-[9px] uppercase tracking-widest text-cube-text/40">Karar</p>
               {verdictLabel ? (
                 <p
-                  className={`mt-3 font-mono text-lg font-bold tracking-wider ${verdictColor}`}
+                  className="mt-3 font-mono text-lg font-bold tracking-wider"
+                  style={verdictStyle}
                 >
                   {verdictLabel}
                 </p>
@@ -438,7 +523,15 @@ export function DashboardClient({ email }: Props) {
                     <span className="text-cube-text/30 transition hover:text-cube-text/60">
                       <InfoIcon />
                     </span>
-                    <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden w-52 -translate-x-1/2 border border-white/10 bg-cube-bg/95 p-2.5 text-[9px] leading-relaxed text-cube-text/60 backdrop-blur-md group-hover:block">
+                    <div
+                      className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden w-52 -translate-x-1/2 p-2.5 text-[9px] leading-relaxed text-cube-text/60 group-hover:block"
+                      style={{
+                        background:     "rgba(21,24,28,0.95)",
+                        backdropFilter: "blur(12px)",
+                        border:         "1px solid rgba(255,255,255,0.08)",
+                        borderRadius:   "10px",
+                      }}
+                    >
                       Bu skor markanın güvenilirliğini değil, yapay zekanın veri analizindeki tutarlılık oranını temsil eder.
                     </div>
                   </div>
@@ -447,7 +540,13 @@ export function DashboardClient({ email }: Props) {
             </div>
 
             {/* Reasoning card */}
-            <div className="flex-1 border border-white/[0.08] bg-white/[0.04] p-5 backdrop-blur-md flex flex-col gap-4 min-h-0 overflow-y-auto">
+            <div
+              className="flex-1 rounded-xl p-5 flex flex-col gap-4 min-h-0 overflow-y-auto"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border:     "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
               <div>
                 <p className="text-[9px] uppercase tracking-widest text-cube-text/40">Gerekçe</p>
 
@@ -458,7 +557,10 @@ export function DashboardClient({ email }: Props) {
                       const numMatch   = line.trim().match(/^(\d+\))\s*(.*)/s);
                       return isNumbered && numMatch ? (
                         <div key={i} className="flex gap-2.5">
-                          <span className="mt-0.5 shrink-0 font-mono text-[10px] font-semibold text-cube-accent/70 leading-relaxed">
+                          <span
+                            className="mt-0.5 shrink-0 font-mono text-[10px] font-semibold leading-relaxed"
+                            style={{ color: "rgba(50,93,167,0.80)" }}
+                          >
                             {numMatch[1]}
                           </span>
                           <p className="text-[12.5px] leading-loose text-cube-text/70">
@@ -479,13 +581,22 @@ export function DashboardClient({ email }: Props) {
                 )}
               </div>
 
-              {/* Savings tip — shown only when present */}
+              {/* Savings tip */}
               {savingsTip && (
-                <div className="border-t border-cube-accent/15 pt-3">
-                  <p className="text-[9px] uppercase tracking-widest text-cube-accent/60">
+                <div
+                  className="pt-3"
+                  style={{ borderTop: "1px solid rgba(246,140,6,0.15)" }}
+                >
+                  <p
+                    className="text-[9px] uppercase tracking-widest"
+                    style={{ color: "rgba(246,140,6,0.65)" }}
+                  >
                     Tasarruf Önerisi
                   </p>
-                  <p className="mt-1.5 text-[12px] leading-loose text-cube-accent/80">
+                  <p
+                    className="mt-1.5 text-[12px] leading-loose"
+                    style={{ color: "rgba(246,140,6,0.85)" }}
+                  >
                     {savingsTip}
                   </p>
                 </div>

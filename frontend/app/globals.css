@@ -3,11 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --bg: #261f38;
-  --fg: #efefef;
-  --accent: #bc5727;
-  --muted: #9ca3af;
-  --border: #4b5563;
+  --bg:     #15181c;
+  --fg:     #f7f7f7;
+  --blue:   #325da7;
+  --orange: #f68c06;
+  --accent: #f68c06;
+  --muted:  #9ca3af;
+  --border: rgba(255, 255, 255, 0.08);
 }
 
 html,
@@ -15,35 +17,140 @@ body {
   height: 100%;
 }
 
+/* ── Global background: dark base + blue dot grid ────────────────────────── */
 body {
-  background-color: var(--bg);
-  color: var(--fg);
+  background-color: #15181c;
+  background-image: radial-gradient(rgba(50, 93, 167, 0.15) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: #f7f7f7;
+  position: relative;
+}
+
+/* ── Glow blobs: top-left blue, bottom-right orange ─────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  top: -120px;
+  left: -120px;
+  width: 600px;
+  height: 600px;
+  background: rgba(50, 93, 167, 0.12);
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  bottom: -100px;
+  right: -100px;
+  width: 500px;
+  height: 500px;
+  background: rgba(246, 140, 6, 0.08);
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
 }
 
 ::selection {
-  background: var(--accent);
+  background: var(--blue);
   color: #ffffff;
 }
 
-/* ── Floating / breathing animation for the hero cube PNG ─────────────────── */
+/* ── Floating animation (hero cube PNG fallback) ─────────────────────────── */
 @keyframes cubefloat {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
 }
-
 .animate-cubefloat {
   animation: cubefloat 5s ease-in-out infinite;
 }
 
-/* ── Utility: hide scrollbar (bottom bar horizontal overflow) ──────────── */
+/* ── Utility: hide scrollbar ─────────────────────────────────────────────── */
 .scrollbar-none {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 .scrollbar-none::-webkit-scrollbar {
   display: none;
+}
+
+/* ── Neon pulse: primary button — blue (#325da7) ─────────────────────────── */
+@keyframes neon-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(50, 93, 167, 0.55),
+      0 0 20px rgba(50, 93, 167, 0.35),
+      0 0 50px rgba(50, 93, 167, 0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(50, 93, 167, 0.80),
+      0 0 35px rgba(50, 93, 167, 0.55),
+      0 0 80px rgba(50, 93, 167, 0.25);
+  }
+}
+.animate-neon-pulse {
+  animation: neon-pulse 2.4s ease-in-out infinite;
+}
+
+/* ── Cube CSS neon breathe — blue primary, orange hint ──────────────────── */
+@keyframes cube-neon-breathe {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0  5px rgba(50,  93, 167, 0.40))
+      drop-shadow(0 0 12px rgba(50,  93, 167, 0.20));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 10px rgba(50,  93, 167, 0.70))
+      drop-shadow(0 0 28px rgba(50,  93, 167, 0.35))
+      drop-shadow(0 0  6px rgba(246, 140,   6, 0.18));
+  }
+}
+.cube-neon-glow {
+  animation: cube-neon-breathe 3.6s ease-in-out infinite;
+}
+
+/* ── Badge hover glow — blue ─────────────────────────────────────────────── */
+.badge-glow {
+  transition:
+    box-shadow    0.3s ease-in-out,
+    border-color  0.3s ease-in-out,
+    color         0.3s ease-in-out,
+    background    0.3s ease-in-out;
+}
+.badge-glow:hover {
+  box-shadow: 0 0 12px rgba(50, 93, 167, 0.30), inset 0 0 8px rgba(50, 93, 167, 0.10);
+  border-color: rgba(50, 93, 167, 0.55) !important;
+}
+
+/* ── Secondary text button hover ─────────────────────────────────────────── */
+.btn-glass-glow {
+  transition:
+    box-shadow    0.3s ease-in-out,
+    border-color  0.3s ease-in-out,
+    background    0.3s ease-in-out,
+    color         0.3s ease-in-out;
+}
+.btn-glass-glow:hover {
+  box-shadow:
+    0 0 18px rgba(50, 93, 167, 0.18),
+    inset 0 0 14px rgba(255, 255, 255, 0.06);
+  border-color: rgba(50, 93, 167, 0.40) !important;
+}
+
+/* ── Step block: entire phase glows on hover — blue ─────────────────────── */
+.step-block {
+  transition:
+    background 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out;
+  padding: 6px 10px 10px;
+}
+.step-block:hover {
+  background: rgba(50, 93, 167, 0.06);
+  box-shadow: 0 0 22px rgba(50, 93, 167, 0.14);
 }

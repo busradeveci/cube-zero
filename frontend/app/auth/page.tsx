@@ -69,13 +69,19 @@ function PasswordField({ id, label, value, onChange, autoComplete, visible, onTo
           minLength={6}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full border border-cube-accent/30 bg-white/[0.06] px-3 py-2 pr-9 text-sm text-cube-text outline-none transition-colors focus:border-cube-accent"
+          className="w-full rounded-lg px-3 py-2.5 pr-9 text-sm text-cube-text outline-none transition-colors"
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.10)",
+          }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(50,93,167,0.60)"; }}
+          onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}
         />
         <button
           type="button"
           onClick={onToggle}
           aria-label={visible ? "Parolayı gizle" : "Parolayı göster"}
-          className="absolute inset-y-0 right-0 flex items-center px-2.5 text-cube-text/40 transition hover:text-cube-accent"
+          className="absolute inset-y-0 right-0 flex items-center px-2.5 text-cube-text/40 transition hover:text-cube-text"
         >
           {visible ? <EyeOffIcon /> : <EyeIcon />}
         </button>
@@ -119,15 +125,16 @@ export default function AuthPage() {
       setMode("signup");
     }
   }, []);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
+  const [email, setEmail]                   = useState("");
+  const [password, setPassword]             = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
-  const [message, setMessage] = useState<string | null>(null);
-  const [isError, setIsError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword]     = useState(false);
+  const [showConfirm, setShowConfirm]       = useState(false);
+  const [rememberMe, setRememberMe]         = useState(true);
+  const [message, setMessage]               = useState<string | null>(null);
+  const [isError, setIsError]               = useState(false);
+  const [loading, setLoading]               = useState(false);
 
   function switchMode(next: "signin" | "signup") {
     setMode(next);
@@ -175,40 +182,76 @@ export default function AuthPage() {
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center px-6 py-16">
-      {/* Warm ambient glow — matches landing page atmosphere */}
+
+      {/* Blue ambient glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 80% 55% at 50% 42%, rgba(188,87,39,0.09) 0%, transparent 68%)",
+            "radial-gradient(ellipse 80% 55% at 50% 42%, rgba(50,93,167,0.12) 0%, transparent 68%)",
         }}
       />
 
+      {/* Back link — "Cube" orange, "Zero" white */}
       <Link
         href="/"
-        className="relative mb-10 text-xs uppercase tracking-widest text-cube-text/50 transition hover:text-cube-text"
+        className="relative mb-10 text-xs uppercase tracking-widest text-cube-text/50 transition hover:text-cube-text/80"
       >
-        ← CubeZero
+        ←{" "}
+        <span
+          style={{
+            color: "#f68c06",
+            textShadow:
+              "0 0 12px rgba(246,140,6,0.80), 0 0 28px rgba(246,140,6,0.45), 0 0 52px rgba(246,140,6,0.20)",
+          }}
+        >
+          Cube
+        </span>
+        <span
+          style={{
+            color: "#ffffff",
+            textShadow: "0 0 18px rgba(255,255,255,0.35)",
+          }}
+        >
+          Zero
+        </span>
       </Link>
 
-      {/* Glassmorphism card — sharp edges, frosted fill */}
-      <div className="relative w-full max-w-sm border border-cube-accent/25 bg-white/[0.05] p-8 backdrop-blur-md">
-        <h1 className="text-lg font-semibold text-cube-text">Erişim</h1>
+      {/* Glassmorphism card */}
+      <div
+        className="relative w-full max-w-sm p-8"
+        style={{
+          background: "rgba(255,255,255,0.06)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "16px",
+        }}
+      >
+        <h1 className="text-lg font-semibold text-white">Erişim</h1>
         <p className="mt-2 text-sm text-cube-text/55">
           Supabase Auth ile giriş veya kayıt. Hassas finansal veri toplanmaz.
         </p>
 
         {/* Mode tabs */}
-        <div className="mt-6 flex gap-2 border-b border-cube-accent/20 pb-2 text-sm">
+        <div
+          className="mt-6 flex gap-2 pb-2 text-sm"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+        >
           <button
             type="button"
             onClick={() => switchMode("signin")}
             className={`flex-1 py-2 transition-colors ${
               mode === "signin"
-                ? "border-b-2 border-cube-accent text-cube-text"
+                ? "font-medium text-white"
                 : "text-cube-text/45 hover:text-cube-text/70"
             }`}
+            style={
+              mode === "signin"
+                ? { borderBottom: "2px solid #325da7" }
+                : {}
+            }
           >
             Giriş
           </button>
@@ -217,15 +260,21 @@ export default function AuthPage() {
             onClick={() => switchMode("signup")}
             className={`flex-1 py-2 transition-colors ${
               mode === "signup"
-                ? "border-b-2 border-cube-accent text-cube-text"
+                ? "font-medium text-white"
                 : "text-cube-text/45 hover:text-cube-text/70"
             }`}
+            style={
+              mode === "signup"
+                ? { borderBottom: "2px solid #325da7" }
+                : {}
+            }
           >
             Kayıt
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {/* Email */}
           <div>
             <label htmlFor="email" className="text-xs uppercase tracking-wide text-cube-text/40">
               E-posta
@@ -237,7 +286,13 @@ export default function AuthPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full border border-cube-accent/30 bg-white/[0.06] px-3 py-2 text-sm text-cube-text outline-none transition-colors focus:border-cube-accent"
+              className="mt-1 w-full rounded-lg px-3 py-2.5 text-sm text-cube-text outline-none transition-colors"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.10)",
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(50,93,167,0.60)"; }}
+              onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}
             />
           </div>
 
@@ -268,25 +323,30 @@ export default function AuthPage() {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-3.5 w-3.5 accent-cube-accent"
+              className="h-3.5 w-3.5"
+              style={{ accentColor: "#325da7" }}
             />
             <span className="text-xs text-cube-text/55">Beni hatırla</span>
           </label>
 
+          {/* Submit — blue */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full border border-cube-accent bg-transparent py-2.5 text-sm font-medium text-cube-text transition-colors hover:bg-cube-accent hover:text-white disabled:opacity-50"
+            className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-colors disabled:opacity-50"
+            style={{ background: loading ? "#2a4f96" : "#325da7" }}
+            onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = "#2a4f96"; }}
+            onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = "#325da7"; }}
           >
             {loading ? "İşleniyor…" : mode === "signup" ? "Kayıt ol" : "Giriş yap"}
           </button>
         </form>
 
-        {message ? (
+        {message && (
           <p className={`mt-4 text-xs leading-relaxed ${isError ? "text-red-400" : "text-cube-text/60"}`}>
             {message}
           </p>
-        ) : null}
+        )}
       </div>
     </main>
   );

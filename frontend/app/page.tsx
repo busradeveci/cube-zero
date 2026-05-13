@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
@@ -13,209 +15,219 @@ const BADGES = [
   { label: "Llama 3.3 · 70B" },
 ];
 
-/* ── Bottom unified bar data ────────────────────────────────────────────── */
+/* ── Bottom unified bar: 3-step process ─────────────────────────────────── */
 const STEPS = [
   {
-    num: "01",
-    action: "Linki Yapıştır",
+    num:     "01",
+    action:  "Linki Yapıştır",
     feature: "Ürün URL'sini dashboard'a bırak",
   },
   {
-    num: "02",
-    action: "Ajan Analiz Etsin",
+    num:     "02",
+    action:  "Ajan Analiz Etsin",
     feature: "Piyasa taranır, fiyat doğrulanır",
   },
   {
-    num: "03",
-    action: "Kararı Al",
+    num:     "03",
+    action:  "Kararı Al",
     feature: "AL · STRATEJİK BEKLEME · ALMA",
   },
 ];
 
 export default function HomePage() {
   return (
-    /*
-      Single-screen layout: h-screen overflow-hidden so nothing scrolls.
-      flex-col splits hero (flex-1) from the bottom process bar (shrink-0).
-    */
     <main className="relative flex h-screen flex-col overflow-hidden">
 
       {/* ══════════════════════════════════════════════════════════
-          HERO — fills all remaining vertical space
+          HERO — takes all vertical space except the bottom bar
       ══════════════════════════════════════════════════════════ */}
       <section className="relative flex min-h-0 flex-1 overflow-hidden">
 
-        {/* ── Multi-layer ambient glow ───────────────────────────────── */}
+        {/* Multi-layer ambient glow — blue dominant, orange accent */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
           style={{
             background: [
-              /* right-center main halo */
-              "radial-gradient(ellipse 70% 90% at 80% 50%, rgba(188,87,39,0.24) 0%, rgba(188,87,39,0.06) 50%, transparent 70%)",
-              /* right bright core */
-              "radial-gradient(ellipse 35% 60% at 78% 52%, rgba(188,87,39,0.18) 0%, transparent 55%)",
-              /* bottom-left subtle warmth */
-              "radial-gradient(ellipse 50% 40% at 8% 90%, rgba(188,87,39,0.08) 0%, transparent 60%)",
+              "radial-gradient(ellipse 70% 90% at 80% 50%, rgba(50,93,167,0.22) 0%, rgba(50,93,167,0.05) 50%, transparent 70%)",
+              "radial-gradient(ellipse 35% 60% at 78% 52%, rgba(50,93,167,0.16) 0%, transparent 55%)",
+              "radial-gradient(ellipse 50% 40% at 8%  90%, rgba(246,140,6,0.06) 0%, transparent 60%)",
             ].join(", "),
           }}
         />
 
-        {/* ── 3D Cube — right half, desktop only ────────────────────── */}
+        {/* 3D Cube — right half, desktop — blue CSS neon breathe */}
         <div
           aria-hidden="true"
-          className="absolute inset-y-0 right-0 hidden lg:block"
+          className="cube-neon-glow absolute inset-y-0 right-0 hidden lg:block"
           style={{ width: "50vw", zIndex: 1, pointerEvents: "none" }}
         >
           <NeuralCubeScene />
         </div>
 
-        {/* ── Mobile background cube (subtle, faded) ────────────────── */}
+        {/* Mobile: faded background cube */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 opacity-20 lg:hidden"
+          className="cube-neon-glow absolute inset-0 opacity-20 lg:hidden"
           style={{ zIndex: 0, pointerEvents: "none" }}
         >
           <NeuralCubeScene />
         </div>
 
-        {/* ── Main content grid ─────────────────────────────────────── */}
+        {/* Main content grid */}
         <div className="relative z-10 mx-auto grid h-full w-full max-w-[1440px] grid-cols-1 lg:grid-cols-2">
 
-          {/* LEFT: hero copy — vertically centered */}
+          {/* LEFT: hero copy */}
           <div className="flex flex-col justify-center px-8 py-10 lg:px-16 xl:px-24">
 
-            {/* ── Tech badge row ─────────────────────────────────────── */}
+            {/* Tech badges */}
             <div className="mb-7 flex flex-wrap items-center gap-2">
               {BADGES.map((b) => (
                 <span
                   key={b.label}
-                  className="rounded-full border border-white/[0.14] bg-white/[0.06] px-3.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.28em] text-cube-text/65 backdrop-blur-sm"
+                  className="badge-glow cursor-default rounded-full border border-white/[0.10] bg-white/[0.06] px-3.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.28em] text-cube-text/60 backdrop-blur-sm"
                 >
                   {b.label}
                 </span>
               ))}
             </div>
 
-            {/* ── Main headline ──────────────────────────────────────── */}
-            <h1 className="text-[2rem] font-bold leading-[1.08] tracking-tight text-cube-text sm:text-[2.4rem] xl:text-[2.85rem]">
-              CubeZero:{" "}
+            {/* Main headline: "Cube" = orange, "Zero" = white with glow */}
+            <h1 className="text-[2rem] font-bold leading-[1.08] tracking-tight sm:text-[2.4rem] xl:text-[2.85rem]">
+              <span style={{ color: "#f68c06" }}>Cube</span>
+              <span
+                style={{
+                  color: "#ffffff",
+                  textShadow: "0 0 28px rgba(255,255,255,0.35)",
+                }}
+              >
+                Zero
+              </span>
+              :{" "}
               <br className="hidden sm:block" />
               Harcamalarınızı{" "}
               <span
-                className="text-cube-accent"
-                style={{ textShadow: "0 0 72px rgba(188,87,39,0.75)" }}
+                style={{
+                  color: "#f68c06",
+                  textShadow: "0 0 52px rgba(246,140,6,0.70)",
+                }}
               >
                 Akıllı
               </span>
               <br />
-              Yatırımlara Dönüştürün
+              <span className="text-cube-text">Yatırımlara Dönüştürün</span>
             </h1>
 
-            {/* ── Sub-copy ───────────────────────────────────────────── */}
+            {/* Sub-copy — preserved */}
             <p className="mt-5 max-w-[360px] text-[13.5px] leading-relaxed text-cube-text/50">
               Ürün URL&apos;sini yapıştır — CubeZero piyasayı tarasın,
               bütçeni korusun ve saniyeler içinde otonom kararını sunsun.
             </p>
 
-            {/* ── CTA buttons ────────────────────────────────────────── */}
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            {/* CTA buttons */}
+            <div className="mt-8 flex flex-wrap items-center gap-4">
 
-              {/* PRIMARY: Kayıt Ol — solid accent + neon glow */}
+              {/* PRIMARY: red Kayıt Ol with glow */}
               <Link
                 href="/auth?mode=signup"
-                className="inline-flex items-center gap-2 bg-cube-accent px-7 py-[11px] text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.97]"
+                className="inline-flex items-center gap-2 rounded-lg px-7 py-[11px] text-sm font-semibold text-white transition-[background,box-shadow,transform] duration-200 active:scale-[0.97]"
                 style={{
-                  boxShadow:
-                    "0 0 0 1px rgba(188,87,39,0.5), 0 0 20px rgba(188,87,39,0.45), 0 0 48px rgba(188,87,39,0.20)",
+                  background: "#dc2626",
+                  boxShadow:  "0 0 20px rgba(220,38,38,0.40)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background  = "#b91c1c";
+                  e.currentTarget.style.boxShadow   = "0 0 28px rgba(220,38,38,0.60)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background  = "#dc2626";
+                  e.currentTarget.style.boxShadow   = "0 0 20px rgba(220,38,38,0.40)";
                 }}
               >
                 Kayıt Ol
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
               </Link>
 
-              {/* SECONDARY: Giriş Yap — glass outlined */}
+              {/* SECONDARY: transparent text link */}
               <Link
                 href="/auth"
-                className="inline-flex items-center border border-white/[0.18] bg-white/[0.05] px-7 py-[11px] text-sm font-medium text-cube-text/70 backdrop-blur-sm transition-all duration-200 hover:border-white/30 hover:bg-white/[0.09] hover:text-cube-text"
+                className="inline-flex items-center gap-1 px-2 py-[11px] text-sm font-medium text-cube-text/70 transition-colors duration-300 hover:text-white"
               >
-                Giriş Yap
+                Giriş Yap →
               </Link>
             </div>
           </div>
 
-          {/* RIGHT: cube fills this via absolute */}
+          {/* RIGHT: cube fills via absolute */}
           <div className="hidden lg:block" aria-hidden="true" />
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          BOTTOM UNIFIED BAR — process steps + feature descriptors
+          BOTTOM UNIFIED BAR — glassmorphism stats card
       ══════════════════════════════════════════════════════════ */}
       <div className="relative shrink-0">
 
-        {/* top edge line */}
+        {/* accent top-edge line — blue */}
         <div
           aria-hidden="true"
           className="absolute inset-x-0 top-0 h-px"
           style={{
             background:
-              "linear-gradient(to right, transparent 0%, rgba(188,87,39,0.30) 30%, rgba(188,87,39,0.30) 70%, transparent 100%)",
+              "linear-gradient(to right, transparent 0%, rgba(50,93,167,0.55) 30%, rgba(50,93,167,0.55) 70%, transparent 100%)",
           }}
         />
 
-        {/* subtle row glow */}
+        {/* glassmorphism surface */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
+          className="absolute inset-0"
           style={{
-            background:
-              "radial-gradient(ellipse 80% 120% at 50% 100%, rgba(188,87,39,0.07) 0%, transparent 70%)",
+            background: "rgba(255,255,255,0.04)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
           }}
         />
 
         <div className="relative z-10 mx-auto max-w-[1440px] px-8 py-5 lg:px-16 xl:px-24">
-          <div className="flex items-center gap-0 overflow-x-auto scrollbar-none md:gap-0">
+          <div className="flex items-center overflow-x-auto scrollbar-none">
             {STEPS.map((step, i) => (
               <div key={step.num} className="flex items-center">
-                {/* divider — not before first */}
+
                 {i > 0 && (
                   <div className="mx-6 h-8 w-px shrink-0 bg-white/[0.08] md:mx-8" />
                 )}
 
-                {/* step block */}
-                <div className="shrink-0">
+                {/* Interactive step block */}
+                <div className="step-block group/step relative shrink-0 cursor-default">
+
                   <div className="flex items-center gap-2">
                     <span
-                      className="font-mono text-[10px] font-bold text-cube-accent"
-                      style={{ textShadow: "0 0 12px rgba(188,87,39,0.5)" }}
+                      className="font-mono text-[10px] font-bold transition-all duration-300 group-hover/step:[text-shadow:0_0_14px_rgba(50,93,167,0.90)]"
+                      style={{ color: "rgba(50,93,167,0.85)" }}
                     >
                       {step.num}
                     </span>
-                    <span className="text-[12px] font-medium text-cube-text/75">
+                    <span className="text-[12px] font-medium text-cube-text/60 transition-colors duration-300 group-hover/step:text-cube-text">
                       {step.action}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-[9px] uppercase tracking-[0.20em] text-cube-text/30">
+
+                  <p className="mt-0.5 text-[9px] uppercase tracking-[0.20em] text-cube-text/30 transition-colors duration-300 group-hover/step:text-cube-text/55">
                     {step.feature}
                   </p>
+
+                  {/* animated bottom border — blue */}
+                  <div
+                    className="absolute bottom-0 left-0 h-[1.5px] w-0 transition-[width] duration-300 ease-out group-hover/step:w-full"
+                    style={{
+                      background: "#325da7",
+                      boxShadow: "0 0 10px rgba(50,93,167,0.80)",
+                    }}
+                  />
                 </div>
               </div>
             ))}
 
-            {/* extra right divider + tagline */}
             <div className="ml-6 hidden h-8 w-px shrink-0 bg-white/[0.08] md:ml-8 md:block" />
             <p className="ml-6 hidden shrink-0 text-[9px] uppercase tracking-[0.28em] text-cube-text/20 md:ml-8 md:block">
               CubeZero · Otonom Finansal Kalkan
