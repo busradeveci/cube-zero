@@ -449,8 +449,8 @@ export function DashboardClient({ email }: Props) {
           className="sticky top-0 z-30 flex items-center justify-between border-b border-white/[0.05] bg-[#0a0a0a] px-8 py-4"
           style={{ boxShadow: "none" }}
         >
-          <h1 className="relative z-10 font-mono text-xs uppercase tracking-[0.35em] text-cube-text/55">
-            CubeZ · Fintech AI
+          <h1 className="relative z-10 text-[15px] font-bold tracking-[0.12em] text-[#e8eaed] antialiased">
+            CubeZ
           </h1>
           <div className="relative z-10 flex items-center gap-6">
             <span className="font-mono text-xs text-cube-text/45">{email}</span>
@@ -627,11 +627,11 @@ export function DashboardClient({ email }: Props) {
             </div>
           </aside>
 
-          <section className="flex min-h-0 flex-col items-center justify-start rounded-2xl px-6 pb-10 pt-[max(1rem,5vh)]">
-            <div className="flex w-full max-w-sm flex-col items-center gap-14">
-              <div className="relative flex flex-col items-center gap-3 pt-4">
+          <section className="flex min-h-0 flex-col items-center justify-center rounded-2xl px-6 py-10">
+            <div className="flex w-full max-w-sm flex-col items-center justify-center gap-20">
+              <div className="relative flex flex-col items-center gap-5 pt-2">
                 <div className="cube-gemini-halo" aria-hidden />
-                <div className="cube-gemini-stack flex flex-col items-center gap-3">
+                <div className="cube-gemini-stack flex flex-col items-center gap-16 pb-6">
                 <div
                   className={loading ? "cube-shell cube-shell--thinking" : "cube-shell"}
                   style={{ width: 120, height: 120, perspective: "320px" }}
@@ -656,10 +656,10 @@ export function DashboardClient({ email }: Props) {
                   </div>
                 </div>
 
-                <div className="min-h-[1.5rem] max-w-md px-2 text-center">
+                <div className="relative z-[2] mt-2 min-h-[3rem] w-full max-w-md px-3 pt-4 text-center">
                   {loading ? (
                     <p
-                      className="font-mono text-xs transition-opacity duration-300"
+                      className="font-mono text-xs font-semibold transition-opacity duration-300"
                       style={{ color: "#f68c06" }}
                     >
                       {STATUS_MESSAGES[statusIndex]}
@@ -672,7 +672,9 @@ export function DashboardClient({ email }: Props) {
                       {verdictLabel}
                     </p>
                   ) : (
-                    <p className="text-xs text-cube-text/20">CubeZ bekliyor…</p>
+                    <p className="text-xs font-medium leading-relaxed text-cube-text/35">
+                      CubeZ bekliyor…
+                    </p>
                   )}
                 </div>
                 </div>
@@ -698,14 +700,7 @@ export function DashboardClient({ email }: Props) {
                 type="button"
                 onClick={runAnalysis}
                 disabled={loading || !url.trim()}
-                className="w-full shrink-0 rounded-lg border border-transparent py-3 text-sm font-semibold uppercase tracking-widest text-white transition-colors disabled:cursor-not-allowed disabled:opacity-100"
-                style={{ background: "#325da7" }}
-                onMouseEnter={(e) => {
-                  if (!loading && url.trim()) e.currentTarget.style.background = "#2a4f96";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#325da7";
-                }}
+                className="w-full shrink-0 rounded-lg border border-transparent py-3 text-sm font-bold tracking-wide text-white shadow-none transition-[background-color,box-shadow] duration-200 bg-[#1e5da7] hover:bg-[#1a5496] hover:shadow-[0_0_20px_rgba(30,93,167,0.4)] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:bg-[#1e5da7] disabled:hover:shadow-none"
               >
                 CubeZ&apos;e Gönder
               </button>
