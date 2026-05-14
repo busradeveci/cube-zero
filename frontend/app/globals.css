@@ -12,9 +12,16 @@
   --border: rgba(255, 255, 255, 0.08);
 }
 
+/* Clip ambient glow at viewport edges (no theme darkening) */
+html {
+  overflow-x: hidden;
+  background-color: #15181c;
+}
+
 html,
 body {
-  height: 100%;
+  min-height: 100%;
+  height: auto;
 }
 
 /* ── Global background: dark base + blue dot grid ────────────────────────── */
@@ -24,6 +31,7 @@ body {
   background-size: 32px 32px;
   color: #f7f7f7;
   position: relative;
+  overflow-x: hidden;
 }
 
 /* ── Glow blobs: top-left blue, bottom-right orange ─────────────────────── */

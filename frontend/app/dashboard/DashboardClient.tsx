@@ -258,7 +258,7 @@ export function DashboardClient({ email }: Props) {
       `}</style>
 
       {/* Transparent main — global bg (#15181c + dot grid) shows through */}
-      <main className="min-h-screen text-cube-text">
+      <main className="dashboard-root min-h-screen w-full overflow-x-hidden text-cube-text">
 
         {/* Header */}
         <header
@@ -286,10 +286,10 @@ export function DashboardClient({ email }: Props) {
         </header>
 
         {/* 3-column cockpit */}
-        <div className="relative z-10 grid h-[calc(100vh-57px)] grid-cols-[25%_50%_25%] gap-4 p-4">
+        <div className="relative z-10 grid grid-cols-[25%_50%_25%] items-start gap-4 p-4 pb-14">
 
           {/* ── Column 1: Z-ARŞİV — glass card ── */}
-          <aside className="flex flex-col gap-5 overflow-y-auto p-6" style={glassCard}>
+          <aside className="flex flex-col gap-5 p-6" style={glassCard}>
             <h2 className="font-mono text-[10px] uppercase tracking-[0.35em] text-cube-text/50">
               Z-ARŞİV
             </h2>
@@ -334,14 +334,14 @@ export function DashboardClient({ email }: Props) {
             </div>
 
             {/* Past decisions */}
-            <div className="flex flex-1 flex-col gap-2 min-h-0">
+            <div className="flex flex-col gap-2">
               <p className="text-[9px] uppercase tracking-widest text-cube-text/40">
                 Geçmiş Analizler
               </p>
               {history.length === 0 ? (
                 <p className="text-xs italic text-cube-text/25">Henüz analiz yok</p>
               ) : (
-                <ul className="space-y-1.5 overflow-y-auto">
+                <ul className="space-y-1.5">
                   {history.map((item) => (
                     <li
                       key={item.id}
@@ -409,7 +409,7 @@ export function DashboardClient({ email }: Props) {
           <section className="flex flex-col items-center rounded-2xl p-8 pt-12">
 
             {/* 3D wireframe cube */}
-            <div className="flex flex-1 flex-col items-center justify-center gap-5 min-h-0">
+            <div className="flex flex-col items-center justify-center gap-5 py-6">
               <div style={{ width: 120, height: 120, perspective: "320px" }}>
                 <div
                   className="cube-inner"
@@ -430,7 +430,7 @@ export function DashboardClient({ email }: Props) {
               </div>
 
               {/* Status / verdict below cube */}
-              <div className="mt-6 h-6 text-center">
+              <div className="mt-6 min-h-[1.5rem] max-w-md px-2 text-center">
                 {loading ? (
                   <p
                     className="font-mono text-xs transition-opacity duration-300"
@@ -472,10 +472,14 @@ export function DashboardClient({ email }: Props) {
                 type="button"
                 onClick={runAnalysis}
                 disabled={loading || !url.trim()}
-                className="w-full rounded-lg py-3 text-sm font-semibold uppercase tracking-widest text-white transition-colors disabled:opacity-40"
+                className="w-full shrink-0 rounded-lg border border-transparent py-3 text-sm font-semibold uppercase tracking-widest text-white transition-colors disabled:cursor-not-allowed disabled:opacity-100"
                 style={{ background: "#325da7" }}
-                onMouseEnter={(e) => { if (!loading && url.trim()) e.currentTarget.style.background = "#2a4f96"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "#325da7"; }}
+                onMouseEnter={(e) => {
+                  if (!loading && url.trim()) e.currentTarget.style.background = "#2a4f96";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#325da7";
+                }}
               >
                 CubeZ&apos;e Gönder
               </button>
@@ -541,7 +545,7 @@ export function DashboardClient({ email }: Props) {
 
             {/* Reasoning card */}
             <div
-              className="flex-1 rounded-xl p-5 flex flex-col gap-4 min-h-0 overflow-y-auto"
+              className="flex flex-col gap-4 rounded-xl p-5"
               style={{
                 background: "rgba(255,255,255,0.04)",
                 border:     "1px solid rgba(255,255,255,0.08)",
@@ -554,7 +558,7 @@ export function DashboardClient({ email }: Props) {
                   <div className="mt-3 flex flex-col gap-3">
                     {rationale.split("\n").filter(Boolean).map((line, i) => {
                       const isNumbered = /^\d+\)/.test(line.trim());
-                      const numMatch   = line.trim().match(/^(\d+\))\s*(.*)/s);
+                      const numMatch   = line.trim().match(/^(\d+\))\s*(.*)/);
                       return isNumbered && numMatch ? (
                         <div key={i} className="flex gap-2.5">
                           <span
@@ -563,12 +567,12 @@ export function DashboardClient({ email }: Props) {
                           >
                             {numMatch[1]}
                           </span>
-                          <p className="text-[12.5px] leading-loose text-cube-text/70">
+                          <p className="text-[12.5px] leading-loose text-cube-text/80">
                             {numMatch[2]}
                           </p>
                         </div>
                       ) : (
-                        <p key={i} className="text-[12.5px] leading-loose text-cube-text/60">
+                        <p key={i} className="text-[12.5px] leading-loose text-cube-text/75">
                           {line}
                         </p>
                       );

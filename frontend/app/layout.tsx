@@ -26,8 +26,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" className={`${inter.variable} ${jetbrains.variable}`}>
-      <body className="min-h-screen bg-cube-bg font-sans antialiased">
+    <html
+      lang="tr"
+      className={`${inter.variable} ${jetbrains.variable} overflow-x-hidden bg-cube-bg`}
+    >
+      <body className="min-h-screen overflow-x-hidden bg-cube-bg font-sans antialiased">
         {children}
       </body>
     </html>
