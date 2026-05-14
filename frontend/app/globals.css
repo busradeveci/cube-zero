@@ -86,6 +86,28 @@ body::after {
   display: none;
 }
 
+/* Dashboard — İşlem Geçmişi: deep charcoal scrollbar (no white thumb) */
+.dashboard-history-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #35383e #0a0a0a;
+}
+.dashboard-history-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.dashboard-history-scroll::-webkit-scrollbar-track {
+  background: #0a0a0a;
+  border-radius: 6px;
+}
+.dashboard-history-scroll::-webkit-scrollbar-thumb {
+  background: #35383e;
+  border-radius: 6px;
+  border: 1px solid #0a0a0a;
+}
+.dashboard-history-scroll::-webkit-scrollbar-thumb:hover {
+  background: #454952;
+}
+
 /* ── Neon pulse: primary button — blue (#325da7) ─────────────────────────── */
 @keyframes neon-pulse {
   0%, 100% {
