@@ -10,9 +10,9 @@ const NeuralCubeScene = dynamic(
 
 /* ── Badge data ─────────────────────────────────────────────────────────── */
 const BADGES = [
-  { label: "LPU Powered AI" },
-  { label: "Groq Inference" },
+  { label: "Groq LPU" },
   { label: "Llama 3.3 · 70B" },
+  { label: "4 Fazlı Ajan" },
 ];
 
 /* ── Bottom unified bar: 3-step process ─────────────────────────────────── */
@@ -30,7 +30,7 @@ const STEPS = [
   {
     num:     "03",
     action:  "Kararı Al",
-    feature: "AL · STRATEJİK BEKLEME · ALMA",
+    feature: "AL · STRATEJİK BEKLE · ALMA",
   },
 ];
 
@@ -85,7 +85,7 @@ export default function HomePage() {
               {BADGES.map((b) => (
                 <span
                   key={b.label}
-                  className="badge-glow cursor-default rounded-full border border-white/[0.10] bg-white/[0.06] px-3.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.28em] text-cube-text/60 backdrop-blur-sm"
+                  className="badge-glow cursor-default rounded-full border border-white/[0.10] bg-white/[0.06] px-3.5 py-1 text-[9.5px] font-medium tracking-[0.28em] text-cube-text/60 backdrop-blur-sm"
                 >
                   {b.label}
                 </span>
@@ -103,25 +103,26 @@ export default function HomePage() {
                 Cube
               </span>
               <span style={{ color: "#ffffff" }}>Zero</span>
-              :{" "}
+              {" "}
               <br className="hidden sm:block" />
-              Harcamalarınızı{" "}
+              {"Finansal Kararlarınızın"}{" "}
               <span
                 style={{
                   color: "#f68c06",
                   textShadow: "0 0 52px rgba(246,140,6,0.70)",
                 }}
               >
-                Akıllı
+                Otonom
               </span>
               <br />
-              <span className="text-cube-text">Yatırımlara Dönüştürün</span>
+              <span className="text-cube-text">Koruyucusu</span>
             </h1>
 
             {/* Sub-copy — preserved */}
             <p className="mt-5 max-w-[360px] text-[13.5px] leading-relaxed text-cube-text/50">
-              Ürün URL&apos;sini yapıştır — CubeZero piyasayı tarasın,
-              bütçeni korusun ve saniyeler içinde otonom kararını sunsun.
+              Ürün linkini at, CubeZ fiyatı analiz eder, bütçenle
+              karşılaştırır, piyasa yorumu yapar ve sana tek bir net karar
+              sunar.
             </p>
 
             {/* CTA buttons */}

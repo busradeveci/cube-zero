@@ -196,7 +196,7 @@ export default function AuthPage() {
       {/* Back link — "Cube" orange, "Zero" white */}
       <Link
         href="/"
-        className="relative mb-10 text-xs uppercase tracking-widest text-cube-text/50 transition hover:text-cube-text/80"
+        className="relative z-10 mb-8 text-xs uppercase tracking-widest text-cube-text/50 transition hover:text-cube-text/80"
       >
         ←{" "}
         <span
@@ -229,14 +229,18 @@ export default function AuthPage() {
           borderRadius: "16px",
         }}
       >
-        <h1 className="text-lg font-semibold text-white">Erişim</h1>
-        <p className="mt-2 text-sm text-cube-text/55">
-          Supabase Auth ile giriş veya kayıt. Hassas finansal veri toplanmaz.
-        </p>
+        <header className="mb-10 text-center">
+          <h1 className="text-xl font-semibold leading-snug tracking-tight text-white sm:text-[1.3125rem]">
+            Hoş Geldiniz
+          </h1>
+          <p className="mx-auto mt-2.5 max-w-[19rem] text-xs leading-relaxed text-white/60">
+            Hesabınıza güvenle erişin.
+          </p>
+        </header>
 
         {/* Mode tabs */}
         <div
-          className="mt-6 flex gap-2 pb-2 text-sm"
+          className="flex gap-2 pb-2 text-sm"
           style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
         >
           <button
