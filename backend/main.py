@@ -182,7 +182,10 @@ class AnalyzeResponse(BaseModel):
     reason: str
     savings_tip: str
     product_name: str
-    price: float
+    price: float            # ödenecek tutar (= current_price)
+    current_price: float
+    original_price: float
+    discount_percentage: float
     # Frontend-compatible aliases (decision/rationale/confidence)
     decision: str          # "allow" | "shield" | "caution"
     rationale: str

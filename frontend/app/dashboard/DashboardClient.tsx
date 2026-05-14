@@ -62,6 +62,8 @@ export function DashboardClient({ email }: Props) {
   const [rationale, setRationale]     = useState<string | null>(null);
   const [savingsTip, setSavingsTip]   = useState<string | null>(null);
   const [confidence, setConfidence]   = useState<number | null>(null);
+  const [discountPct, setDiscountPct] = useState<number | null>(null);
+  const [priceBand, setPriceBand]     = useState<{ cur: number; orig: number } | null>(null);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState<string | null>(null);
   const [history, setHistory]         = useState<HistoryItem[]>([]);
@@ -114,6 +116,8 @@ export function DashboardClient({ email }: Props) {
     setRationale(null);
     setSavingsTip(null);
     setConfidence(null);
+    setDiscountPct(null);
+    setPriceBand(null);
     setLoading(true);
 
     try {
@@ -142,15 +146,34 @@ export function DashboardClient({ email }: Props) {
       }
 
       const typed = data as {
-        decision:    Decision;
-        rationale:   string;
-        savings_tip: string;
-        confidence:  number;
+        decision:              Decision;
+        rationale:             string;
+        savings_tip:           string;
+        confidence:            number;
+        discount_percentage?: number;
+        current_price?:       number;
+        original_price?:      number;
       };
       setDecision(typed.decision);
       setRationale(typed.rationale ?? null);
       setSavingsTip(typed.savings_tip ?? null);
       setConfidence(typeof typed.confidence === "number" ? typed.confidence : null);
+      const dp = typed.discount_percentage;
+      const cur = typed.current_price;
+      const orig = typed.original_price;
+      if (
+        typeof dp === "number" &&
+        dp >= 0.5 &&
+        typeof cur === "number" &&
+        typeof orig === "number" &&
+        orig > cur * 1.005
+      ) {
+        setDiscountPct(dp);
+        setPriceBand({ cur, orig });
+      } else {
+        setDiscountPct(null);
+        setPriceBand(null);
+      }
 
       const newItem: HistoryItem = {
         id:        Date.now().toString(),
@@ -540,6 +563,19 @@ export function DashboardClient({ email }: Props) {
                     </div>
                   </div>
                 </div>
+              )}
+
+              {priceBand !== null && discountPct !== null && discountPct >= 5 && (
+                <p className="mt-3 font-mono text-[10px] leading-relaxed text-cube-text/50">
+                  <span className="line-through text-cube-text/35">
+                    {priceBand.orig.toLocaleString("tr-TR", { maximumFractionDigits: 2 })} TL
+                  </span>
+                  <span className="text-cube-text/30"> → </span>
+                  <span style={{ color: "rgba(246, 140, 6, 0.92)" }}>
+                    {priceBand.cur.toLocaleString("tr-TR", { maximumFractionDigits: 2 })} TL
+                  </span>
+                  <span className="text-cube-text/35"> (−%{Math.round(discountPct)})</span>
+                </p>
               )}
             </div>
 

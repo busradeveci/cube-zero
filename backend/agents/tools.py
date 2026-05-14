@@ -419,6 +419,14 @@ def _price_from_selectors(soup: BeautifulSoup, selectors: list[str]) -> float | 
     return None
 
 
+def _compute_discount_pct(original: float, current: float) -> float:
+    """Liste / eski fiyat ile güncel fiyat arasındaki indirim yüzdesi (0–99.99)."""
+    if original <= 0 or current <= 0 or current >= original * 0.999:
+        return 0.0
+    pct = (original - current) / original * 100.0
+    return round(min(max(pct, 0.0), 99.99), 2)
+
+
 def _amazon_try_embedded_json_price(html: str) -> float | None:
     """Amazon ürün sayfasında gömülü JSON bloklarından fiyat yakalar."""
 
@@ -469,15 +477,18 @@ def _amazon_try_embedded_json_price(html: str) -> float | None:
 
 
 def _price_from_amazon_tr(soup: BeautifulSoup, html: str) -> float | None:
-    """Amazon.com.tr — güncel DOM + meta + gömülü veri sırası."""
+    """Amazon — önce satış/indirimli fiyat (a-text-price = liste, en sonda yedek)."""
     dom_selectors = [
+        "#price_inside_buybox .a-price.priceToPay .a-offscreen",
+        "#price_inside_buybox .reinventPricePriceToPayMargin .a-price .a-offscreen",
+        "#corePrice_feature_div .reinventPricePriceToPayMargin .a-price .a-offscreen",
+        "#corePrice_feature_div .a-price.priceToPay .a-offscreen",
+        "#corePriceDisplay_desktop_feature_div .a-price.priceToPay .a-offscreen",
         "#corePrice_feature_div .a-price .a-offscreen",
         "#corePriceDisplay_desktop_feature_div .a-price .a-offscreen",
         "#desktop_unifiedPrice .a-price .a-offscreen",
-        "#price_inside_buybox .a-price .a-offscreen",
         "#tp_price_block_total_price_ww .a-price .a-offscreen",
-        ".reinventPricePriceToPayMargin .a-price .a-offscreen",
-        "span[data-cy='price-recipe'] .a-price .a-offscreen",
+        "span[data-cy='price-recipe'] .a-price.priceToPay .a-offscreen",
         ".a-price.priceToPay .a-offscreen",
         "#priceblock_dealprice",
         "#priceblock_ourprice",
@@ -485,7 +496,6 @@ def _price_from_amazon_tr(soup: BeautifulSoup, html: str) -> float | None:
         "span#aod-price-1 .a-offscreen",
         "span#aod-price-1 span.a-price .a-offscreen",
         ".a-price .a-offscreen",
-        "span.a-price.a-text-price .a-offscreen",
         "span.a-price-whole",
     ]
     price = _price_from_selectors(soup, dom_selectors)
@@ -536,6 +546,91 @@ def _price_from_amazon_tr(soup: BeautifulSoup, html: str) -> float | None:
             return p
 
     return _amazon_try_embedded_json_price(html)
+
+
+def _amazon_list_reference_price(soup: BeautifulSoup) -> float | None:
+    """Amazon liste / üstü çizili referans fiyatı (a-text-price vb.)."""
+    return _price_from_selectors(
+        soup,
+        [
+            "span.a-price.a-text-price .a-offscreen",
+            "#corePrice_desktop .a-text-price .a-offscreen",
+            ".basisPrice .a-offscreen",
+            "#listPrice",
+            ".a-size-small.a-color-price.a-text-strike .a-offscreen",
+            ".a-size-small.a-color-secondary .a-offscreen",
+            "#corePrice_feature_div .a-text-price .a-offscreen",
+            "#apex_desktop .a-text-price .a-offscreen",
+        ],
+    )
+
+
+def _enrich_current_and_original_prices(
+    soup: BeautifulSoup,
+    netloc: str,
+    base_current: float,
+) -> tuple[float, float, float]:
+    """
+    base_current: birincil scraper çıktısı (satış fiyatı varsayılır).
+    Dönüş: (current_price, original_price, discount_percentage).
+    """
+    current = base_current
+    original = base_current
+
+    if _is_amazon_retail_host(netloc):
+        list_p = _amazon_list_reference_price(soup)
+        if list_p and list_p > current * 1.003:
+            original = list_p
+        else:
+            original = current
+    elif "trendyol.com" in netloc:
+        list_p = _price_from_selectors(
+            soup,
+            ["span.prc-org", ".prc-org", ".pr-bx-pr-org span", ".pr-bx-pr-org"],
+        )
+        if list_p and list_p > current * 1.003:
+            original = list_p
+        else:
+            original = current
+    elif "hepsiburada.com" in netloc:
+        list_p = _price_from_selectors(
+            soup,
+            [
+                ".product-price-wrapper .old-price",
+                ".oldPriceStrickthrough",
+                ".price-old-value",
+                "[class*='old-price']",
+            ],
+        )
+        if list_p and list_p > current * 1.003:
+            original = list_p
+        else:
+            original = current
+    else:
+        sale_c = _price_from_selectors(
+            soup,
+            [".price-new", ".sale-price", ".current-price", ".price--sale"],
+        )
+        old_c = _price_from_selectors(
+            soup,
+            [
+                ".price-old",
+                ".original-price",
+                ".was-price",
+                ".compare-at-price",
+                ".price--was",
+            ],
+        )
+        if sale_c and old_c and old_c > sale_c * 1.003:
+            current = sale_c
+            original = old_c
+        elif old_c and old_c > current * 1.003:
+            original = old_c
+        else:
+            original = current
+
+    disc = _compute_discount_pct(original, current)
+    return current, original, disc
 
 
 # ── Ana scraper ───────────────────────────────────────────────────────────────
@@ -646,11 +741,24 @@ def scrape_product(url: str) -> dict[str, Any]:
             "Lütfen ürünün Trendyol, Hepsiburada veya Amazon.com.tr adresini kullanın."
         )
 
-    logger.info("Fiyat basariyla cekidi: %.2f TRY | Urun: %s", price, name or "?")
+    current_price, original_price, discount_pct = _enrich_current_and_original_prices(
+        soup, netloc, float(price)
+    )
+
+    logger.info(
+        "Fiyat cekildi: current=%.2f original=%.2f indirim=%.2f%% | Urun: %s",
+        current_price,
+        original_price,
+        discount_pct,
+        name or "?",
+    )
     return {
         "name": name or "Bilinmiyor",
-        "price": price,
         "currency": "TRY",
+        "current_price": current_price,
+        "original_price": original_price,
+        "discount_percentage": discount_pct,
+        "price": current_price,
     }
 
 

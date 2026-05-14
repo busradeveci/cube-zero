@@ -44,20 +44,25 @@ class AnalyzeResult:
     savings_tip: str
     product_name: str
     price: float
+    original_price: float
+    discount_percentage: float
     decision: DecisionLabel
     rationale: str
     confidence: float
 
     def as_dict(self) -> dict[str, Any]:
         return {
-            "verdict":      self.verdict,
-            "reason":       self.reason,
-            "savings_tip":  self.savings_tip,
-            "product_name": self.product_name,
-            "price":        self.price,
-            "decision":     self.decision,
-            "rationale":    self.rationale,
-            "confidence":   self.confidence,
+            "verdict":              self.verdict,
+            "reason":               self.reason,
+            "savings_tip":          self.savings_tip,
+            "product_name":         self.product_name,
+            "price":                self.price,
+            "current_price":        self.price,
+            "original_price":       self.original_price,
+            "discount_percentage": self.discount_percentage,
+            "decision":             self.decision,
+            "rationale":            self.rationale,
+            "confidence":           self.confidence,
         }
 
 
@@ -98,8 +103,20 @@ class CubeZAgent:
         logger.info("[A-PERCEIVE] URL analiz ediliyor: %s", url)
         product = scrape_product(url)   # ValueError fırlatır, 0.0 döndürmez
         product_name: str = product["name"]   # type: ignore[assignment]
-        price: float      = product["price"]  # type: ignore[assignment]
-        logger.info("[A-PERCEIVE] Urun: %s | Fiyat: %.2f TRY", product_name, price)
+        price: float = float(product["current_price"])  # type: ignore[assignment]
+        original_price: float = float(
+            product.get("original_price", price)  # type: ignore[assignment]
+        )
+        discount_pct: float = float(
+            product.get("discount_percentage", 0.0)  # type: ignore[assignment]
+        )
+        logger.info(
+            "[A-PERCEIVE] Urun: %s | Fiyat: %.2f TRY | Liste: %.2f | Indirim: %.2f%%",
+            product_name,
+            price,
+            original_price,
+            discount_pct,
+        )
 
         # ── [B] REASON ────────────────────────────────────────────────────────
         logger.info("[B-REASON] Butce uyumu hesaplaniyor...")
@@ -156,13 +173,23 @@ class CubeZAgent:
         else:
             budget_rule = "\nBütçe belirtilmedi — piyasa fiyatı ve fırsat maliyetine göre karar ver."
 
+        discount_block = (
+            "\nİNDİRİM / DEĞER SİNYALİ:\n"
+            "- Sana verilen 'liste veya referans fiyatı' ile 'şu an ödenen tutar' arasındaki farkı mutlaka değerlendir.\n"
+            "- İndirim oranı %20'nin üzerindeyse bunu güçlü bir değer sinyali say: bütçe payı yüksek olsa bile "
+            "AL ile BEKLE arasında AL'a doğru eğil; BEKLE ile ALMA arasında BEKLE'ye doğru eğil (fırsat kaçmasın).\n"
+            "- Ürün fiyatı aylık bütçeyi AŞIYORSA bu kural AL kararını geçersiz kılamaz; yine yalnızca ALMA ver.\n"
+            "- 'reason' metnında indirim ≈%5 veya üzerindeyse kullanıcıya açıkça söyle "
+            "(örn. 'Bu ürün şu an yaklaşık %X indirimde').\n"
+        )
+
         system_prompt = (
             "Sen CubeZ'sin — global e-ticaret platformlarında (özellikle Amazon gibi büyük"
             " pazaryerleri) uzmanlaşmış Otonom Finansal Kalkan Ajanısın.\n"
             "Bu platformların sunduğu ürün, fiyat ve piyasa verilerini en yüksek doğrulukla"
             " analiz eder, kullanıcıyı manipülatif fiyatlandırmadan ve anlık satın alma"
             " baskısından korursun.\n"
-            + budget_rule + "\n\n"
+            + budget_rule + discount_block + "\n"
             "KURALLAR:\n"
             "1. Markayı veya ürün kalitesini asla eleştirme. Sadece finansal uygunluk.\n"
             "2. Tüm yanıtlar %100 Türkçe. Kullan: fırsat maliyeti, bütçe uyumu, piyasa ortalaması.\n"
@@ -182,10 +209,25 @@ class CubeZAgent:
             '"savings_tip":"1 cümle pratik ve uygulanabilir tasarruf önerisi"}'
         )
 
+        if discount_pct >= 0.5 and original_price > price * 1.005:
+            discount_user_line = (
+                f"Liste / referans fiyatı yaklaşık {original_price:,.2f} TL; "
+                f"şu an ödenen tutar {price:,.2f} TL (yaklaşık %{discount_pct:.1f} indirim)."
+            )
+        else:
+            discount_user_line = (
+                "İndirim/liste fiyatı farkı tespit edilmedi veya anlamlı bir indirim yok."
+            )
+
         user_msg_parts = [
             f"=== [A] ÜRÜN ===",
             f"Ürün : {product_name}",
-            f"Fiyat: {price:,.2f} TL",
+            f"Şu an ödenen tutar (satış fiyatı): {price:,.2f} TL",
+            f"Liste / referans fiyatı (varsa): {original_price:,.2f} TL",
+            f"Tahmini indirim oranı: %{discount_pct:.1f}",
+            f"",
+            f"=== [A-2] İNDİRİM ÖZETİ ===",
+            discount_user_line,
             f"",
             f"=== [B] BÜTÇE ===",
             budget_context,
@@ -222,7 +264,7 @@ class CubeZAgent:
                 ],
                 temperature=0.10,
                 response_format={"type": "json_object"},
-                max_tokens=512,
+                max_tokens=640,
             )
         except Exception as exc:
             self._raise_groq_error(exc)
@@ -259,6 +301,13 @@ class CubeZAgent:
         decision   = _VERDICT_TO_DECISION[verdict]
         confidence = _VERDICT_CONFIDENCE[verdict]
 
+        rationale_out = reason
+        if discount_pct >= 5.0 and "indirim" not in reason.lower():
+            rationale_out = (
+                f"Bu ürün liste fiyatına kıyasla yaklaşık %{discount_pct:.0f} indirimde.\n"
+                + reason
+            )
+
         logger.info(
             "[D-VERDICT] Karar: %s | Guven: %.0f%% | Urun: %s | Fiyat: %.2f TL | Butce: %.0f TL",
             verdict, confidence * 100, product_name, price, budget,
@@ -270,8 +319,10 @@ class CubeZAgent:
             savings_tip=savings_tip,
             product_name=product_name,
             price=price,
+            original_price=original_price,
+            discount_percentage=discount_pct,
             decision=decision,
-            rationale=reason,
+            rationale=rationale_out,
             confidence=confidence,
         )
 
