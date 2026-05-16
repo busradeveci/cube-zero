@@ -8,11 +8,10 @@ const NeuralCubeScene = dynamic(
   { ssr: false },
 );
 
-/* ── Badge data ─────────────────────────────────────────────────────────── */
-const BADGES = [
-  { label: "Groq LPU" },
-  { label: "Llama 3.3 · 70B" },
-  { label: "4 Fazlı Ajan" },
+const INTELLIGENCE_STACK_SPECS = [
+  "Groq LPU (Ultra-Low Latency Inference)",
+  "Llama 3.3 · 70B (State-of-the-Art LLM)",
+  "4-Phase Deterministic Agentic Workflow",
 ];
 
 /* ── Bottom unified bar: 3-step process ─────────────────────────────────── */
@@ -77,20 +76,8 @@ export default function HomePage() {
         {/* Main content grid */}
         <div className="relative z-10 mx-auto grid h-full w-full max-w-[1440px] grid-cols-1 lg:grid-cols-2">
 
-          {/* LEFT: hero copy */}
-          <div className="flex flex-col justify-center px-8 py-10 lg:px-16 xl:px-24">
-
-            {/* Tech badges */}
-            <div className="mb-7 flex flex-wrap items-center gap-2">
-              {BADGES.map((b) => (
-                <span
-                  key={b.label}
-                  className="badge-glow cursor-default rounded-full border border-white/[0.10] bg-white/[0.06] px-3.5 py-1 text-[9.5px] font-medium tracking-[0.28em] text-cube-text/60 backdrop-blur-sm"
-                >
-                  {b.label}
-                </span>
-              ))}
-            </div>
+          {/* LEFT: hero copy — vertically centered column, content left-aligned */}
+          <div className="flex min-h-0 flex-col items-start justify-center px-8 py-10 text-start lg:px-16 xl:px-24">
 
             {/* Main headline: "Cube" = orange, "Zero" = white with glow */}
             <h1 className="text-[2rem] font-bold leading-[1.08] tracking-tight sm:text-[2.4rem] xl:text-[2.85rem]">
@@ -120,9 +107,7 @@ export default function HomePage() {
 
             {/* Sub-copy — preserved */}
             <p className="mt-5 max-w-[360px] text-[13.5px] leading-relaxed text-cube-text/50">
-              Ürün linkini at, CubeZ fiyatı analiz eder, bütçenle
-              karşılaştırır, piyasa yorumu yapar ve sana tek bir net karar
-              sunar.
+            Ürün bağlantısını analiz motoruna bırakın; CubeZero anlık piyasa verilerini tarasın, bütçe optimizasyonunuzu hesaplasın ve rasyonel karar mekanizmasını saniyeler içinde çalıştırsın. 
             </p>
 
             {/* CTA buttons */}
@@ -167,6 +152,23 @@ export default function HomePage() {
               >
                 Giriş Yap →
               </Link>
+            </div>
+
+            {/* Intelligence stack — spec row beneath CTAs */}
+            <div className="mt-5 w-full max-w-xl">
+              <p className="mb-2 font-mono text-xs text-white/40">
+                Powering CubeZero&apos;s Intelligence Stack
+              </p>
+              <div className="flex flex-wrap items-start justify-start gap-2">
+                {INTELLIGENCE_STACK_SPECS.map((spec) => (
+                  <span
+                    key={spec}
+                    className="rounded-md border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/60"
+                  >
+                    {spec}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
